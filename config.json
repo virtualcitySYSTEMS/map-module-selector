@@ -1,3 +1,66 @@
 {
-  "name": "module-selector"
+  "name": "module-selector",
+  "isActiveOnStart": true,
+  "requireModuleSelection": false,
+  "basisModule": {
+    "title": "BASISZWILLING",
+    "icon": "mdi-home-city"
+  },
+  "modules": [
+    {
+      "type": "url",
+      "title": "UMWELT",
+      "icon": "mdi-leaf",
+      "moduleUrl": "testUrl"
+    },
+    {
+      "type": "url",
+      "title": "Dev Module",
+      "icon": "mdi-thermometer",
+      "moduleUrl": "/node_modules/@vcmap/ui/config/www.config.json"
+    },
+    {
+      "type": "group",
+      "title": "Wasserstand",
+      "icon": "mdi-waves",
+      "cards": [
+        {
+          "type": "url",
+          "title": "Aerowest",
+          "icon": "mdi-waves",
+          "moduleUrl": "/node_modules/@vcmap/ui/config/aerowest.config.json"
+        },
+        {
+          "type": "url",
+          "title": "Wasserstand 2",
+          "icon": "mdi-waves",
+          "moduleUrl": "testUrl"
+        },
+        {
+          "type": "url",
+          "title": "Wasserstand 3",
+          "icon": "mdi-waves",
+          "moduleUrl": "testUrl"
+        },
+        {
+          "type": "url",
+          "title": "Wasserstand 4",
+          "icon": "mdi-waves",
+          "moduleUrl": "testUrl"
+        },
+        {
+          "type": "url",
+          "title": "Wasserstand 5",
+          "icon": "mdi-waves",
+          "moduleUrl": "testUrl"
+        },
+        {
+          "type": "url",
+          "title": "Wasserstand 6",
+          "icon": "mdi-waves",
+          "moduleUrl": "testUrl"
+        }
+      ]
+    }
+  ]
 }

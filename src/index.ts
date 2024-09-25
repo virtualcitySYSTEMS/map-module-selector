@@ -1,17 +1,50 @@
-import { VcsPlugin, VcsUiApp, PluginConfigEditor } from '@vcmap/ui';
+import {
+  VcsPlugin,
+  VcsUiApp,
+  WindowSlot,
+  ButtonLocation,
+  WindowPositionOptions,
+  createToggleAction,
+} from '@vcmap/ui';
+import { Ref, ref } from 'vue';
 import { name, version, mapVersion } from '../package.json';
+import moduleSelector, { windowIdModuleSelector } from './ModuleSelector.vue';
+import getDefaultOptions from './defaultOptions.js';
+
+export type BasisModule = {
+  title: string;
+  icon: string;
+};
+
+export type ModuleType = 'group' | 'url';
+
+export type Module<T extends ModuleType> = T extends 'group'
+  ? BasisModule & { type: T; cards: Module<'url'>[] }
+  : T extends 'url'
+    ? BasisModule & { moduleUrl: string; type: T }
+    : never;
 
 type PluginConfig = Record<never, never>;
 type PluginState = Record<never, never>;
 
-type MyPlugin = VcsPlugin<PluginConfig, PluginState>;
+export type ModuleSelectorConfig = PluginConfig & {
+  windowTitle?: string;
+  isActiveOnStart?: boolean;
+  requireModuleSelection?: boolean;
+  position?: WindowPositionOptions;
+  basisModule?: BasisModule;
+  modules: Array<Module<ModuleType>>;
+};
+
+export type ModuleSelectorPlugin = VcsPlugin<PluginConfig, PluginState> & {
+  readonly config: ModuleSelectorConfig;
+  selectedMainModuleIndex: Ref<number | undefined | null>;
+  selectedNestedModuleIndex: Ref<number | undefined | null>;
+};
 
 export default function plugin(
-  config: PluginConfig,
-  baseUrl: string,
-): MyPlugin {
-  // eslint-disable-next-line no-console
-  console.log(config, baseUrl);
+  configInput: ModuleSelectorConfig,
+): ModuleSelectorPlugin {
   return {
     get name(): string {
       return name;
@@ -22,57 +55,85 @@ export default function plugin(
     get mapVersion(): string {
       return mapVersion;
     },
-    initialize(vcsUiApp: VcsUiApp, state?: PluginState): Promise<void> {
-      // eslint-disable-next-line no-console
-      console.log(
-        'Called before loading the rest of the current context. Passed in the containing Vcs UI App ',
-        vcsUiApp,
-        state,
+    get config(): ModuleSelectorConfig {
+      return { ...getDefaultOptions(), ...configInput } as ModuleSelectorConfig;
+    },
+    selectedMainModuleIndex: ref(undefined),
+    selectedNestedModuleIndex: ref(undefined),
+    initialize(vcsUiApp: VcsUiApp): Promise<void> {
+      const moduleSelectorComponent = {
+        id: windowIdModuleSelector,
+        component: moduleSelector,
+        slot: WindowSlot.DETACHED,
+        position: this.config.position,
+        state: {
+          headerTitle: this.config.windowTitle,
+        },
+        props: {
+          modules: this.config.modules,
+          basisModule: this.config.basisModule,
+          requireModuleSelection: this.config.requireModuleSelection,
+        },
+      };
+
+      const { action } = createToggleAction(
+        {
+          name: 'moduleSelector',
+          title: 'moduleSelector.title',
+          icon: 'mdi-view-grid',
+        },
+        moduleSelectorComponent,
+        vcsUiApp.windowManager,
+        name,
       );
+
+      vcsUiApp.navbarManager.add(
+        {
+          id: action.name,
+          action,
+        },
+        name,
+        ButtonLocation.PROJECT,
+      );
+
+      if (configInput.isActiveOnStart) {
+        vcsUiApp.windowManager.add(moduleSelectorComponent, name);
+      }
+
       return Promise.resolve();
     },
-    onVcsAppMounted(vcsUiApp: VcsUiApp): void {
-      // eslint-disable-next-line no-console
-      console.log(
-        'Called when the root UI component is mounted and managers are ready to accept components',
-        vcsUiApp,
-      );
+    getDefaultOptions,
+    toJSON(): Partial<ModuleSelectorConfig> {
+      const serial: Partial<ModuleSelectorConfig> = {};
+      if (configInput.windowTitle != null) {
+        serial.windowTitle = configInput.windowTitle;
+      }
+
+      if (configInput.position != null) {
+        serial.position = configInput.position;
+      }
+
+      if (configInput.modules != null) {
+        serial.modules = configInput.modules;
+      }
+      return serial;
     },
-    /**
-     * should return all default values of the configuration
-     */
-    getDefaultOptions(): PluginConfig {
-      return {};
+    i18n: {
+      de: {
+        moduleSelector: {
+          title: 'Themenkartenauswahl',
+          startButton: 'Anwendung starten',
+          cardBack: 'Zurück',
+        },
+      },
+      en: {
+        moduleSelector: {
+          title: 'Theme map selection',
+          startButton: 'Start application',
+          cardBack: 'Back',
+        },
+      },
     },
-    /**
-     * should return the plugin's serialization excluding all default values
-     */
-    toJSON(): PluginConfig {
-      // eslint-disable-next-line no-console
-      console.log('Called when serializing this plugin instance');
-      return {};
-    },
-    /**
-     * should return the plugins state
-     * @param {boolean} forUrl
-     * @returns {PluginState}
-     */
-    getState(forUrl?: boolean): PluginState {
-      // eslint-disable-next-line no-console
-      console.log('Called when collecting state, e.g. for create link', forUrl);
-      return {
-        prop: '*',
-      };
-    },
-    /**
-     * components for configuring the plugin and/ or custom items defined by the plugin
-     */
-    getConfigEditors(): PluginConfigEditor[] {
-      return [];
-    },
-    destroy(): void {
-      // eslint-disable-next-line no-console
-      console.log('hook to cleanup');
-    },
+    destroy(): void {},
   };
 }
