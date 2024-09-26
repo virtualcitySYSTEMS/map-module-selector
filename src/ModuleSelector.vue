@@ -12,29 +12,31 @@
               basisModule.icon
             }}</v-icon>
             <v-card-title class="text-center">{{
-              $t(basisModule.title)
+              $st(basisModule.title)
             }}</v-card-title>
           </v-card>
         </v-col>
         <template v-if="!nestedCards.length">
-          <template v-for="(module, index) in modules">
-            <v-col :key="index" cols="auto" class="pa-2">
-              <v-card
-                class="fixed-card hover-card"
-                outlined
-                :class="{
-                  'selected-card':
-                    plugin.selectedMainModuleIndex.value === index,
-                }"
-                @click="selectModule(index)"
-              >
-                <v-icon v-if="module.icon" size="50">{{ module.icon }}</v-icon>
-                <v-card-title class="text-center">{{
-                  $t(module.title)
-                }}</v-card-title>
-              </v-card>
-            </v-col>
-          </template>
+          <v-col
+            cols="auto"
+            class="pa-2"
+            :key="index"
+            v-for="(module, index) in modules"
+          >
+            <v-card
+              class="fixed-card hover-card"
+              outlined
+              :class="{
+                'selected-card': plugin.selectedMainModuleIndex.value === index,
+              }"
+              @click="selectModule(index)"
+            >
+              <v-icon v-if="module.icon" size="50">{{ module.icon }}</v-icon>
+              <v-card-title class="text-center">{{
+                $st(module.title)
+              }}</v-card-title>
+            </v-card>
+          </v-col>
         </template>
 
         <template v-else>
@@ -45,7 +47,7 @@
               @click="showMainCards()"
             >
               <v-icon size="50">mdi-arrow-left</v-icon>
-              {{ $t('moduleSelector.cardBack') }}
+              {{ $st('moduleSelector.cardBack') }}
             </v-card>
           </v-col>
           <v-col
@@ -64,7 +66,9 @@
               @click="selectNestedModule(index)"
             >
               <v-icon v-if="card.icon" size="50">{{ card.icon }}</v-icon>
-              <v-card-title class="text-center">{{ card.title }}</v-card-title>
+              <v-card-title class="text-center">{{
+                $st(card.title)
+              }}</v-card-title>
             </v-card>
           </v-col>
         </template>
@@ -76,7 +80,7 @@
           @click="startApplication"
           :disabled="isButtonDisabled"
         >
-          {{ $t('moduleSelector.startButton') }}
+          {{ $st('moduleSelector.startButton') }}
         </VcsFormButton>
       </v-row>
     </v-container>
@@ -92,7 +96,7 @@
     VCard,
     VIcon,
     VCardTitle,
-  } from 'vuetify/lib';
+  } from 'vuetify/components';
   import { VcsFormButton, VcsUiApp } from '@vcmap/ui';
   import { computed, defineComponent, inject, PropType } from 'vue';
   import { loadModule, unloadModule } from './moduleHelper.js';
@@ -223,34 +227,17 @@
     align-items: center;
     height: 150px;
     width: 150px; /* Ensure width and height are equal */
-    aspect-ratio: 1 / 1; /* Maintain the square ratio */
+    aspect-ratio: 1; /* Maintain the square ratio */
     transition: background-color 0.3s;
   }
   .fixed-card {
     height: 150px;
     width: 150px;
-    aspect-ratio: 1 / 1; /* Ensures the card remains square */
-  }
-  .fixed-card:focus:before {
-    opacity: 0;
-  }
-
-  /* Hover effect */
-  .hover-card:hover {
-    background-color: var(--v-primary-lighten4);
-    color: var(--v-secondary-darken4);
-  }
-  .hover-card:hover >>> .v-icon {
-    color: var(--v-secondary-darken4);
+    aspect-ratio: 1; /* Ensures the card remains square */
   }
 
   .selected-card {
-    background-color: var(--v-primary-base);
-  }
-  .scrollable-container {
-    max-height: 400px; /* Adjust the height as needed */
-    /*overflow-y: auto;*/
-    overflow-x: hidden;
-    margin-bottom: 20px; /* Space between the scrollable area and the button */
+    background-color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-on-primary));
   }
 </style>

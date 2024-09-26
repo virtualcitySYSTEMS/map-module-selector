@@ -3,7 +3,7 @@
 
 module.exports = {
   root: true,
-  extends: ['@vcsuite/eslint-config/vue-ts'],
+  extends: ['@vcsuite/eslint-config/vue3-ts'],
   env: {
     node: true,
   },
