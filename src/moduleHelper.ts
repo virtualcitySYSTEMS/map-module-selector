@@ -24,8 +24,12 @@ export async function loadModule(
 
 export async function unloadModule(app: VcsUiApp): Promise<void> {
   const moduleId = `moduleSelector_module_id`;
+  const activeMapName = app.maps.activeMap?.name;
   const module = app.getModuleById(moduleId);
   if (module) {
     await app.removeModule(moduleId);
+  }
+  if (!app.maps.activeMap) {
+    await app.maps.setActiveMap(activeMapName || [...app.maps][0]?.name);
   }
 }

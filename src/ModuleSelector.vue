@@ -174,7 +174,7 @@
         const mainModuleIndex = plugin.selectedMainModuleIndex.value;
         const nestedModuleIndex = plugin.selectedNestedModuleIndex.value;
 
-        if (mainModuleIndex === null) return;
+        if (mainModuleIndex === null && !props.basisModule) return;
 
         const mainModule = modules[mainModuleIndex!];
         const nestedModule =
