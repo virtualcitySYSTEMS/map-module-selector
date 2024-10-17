@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/prefer-default-export
 import { VcsModule } from '@vcmap/core';
 import { VcsUiApp } from '@vcmap/ui';
+import type { BasisModule, Module, ModuleType } from './index';
 
 export async function loadModule(
   moduleUrl: string,
@@ -32,4 +33,31 @@ export async function unloadModule(app: VcsUiApp): Promise<void> {
   if (!app.maps.activeMap) {
     await app.maps.setActiveMap(activeMapName || [...app.maps][0]?.name);
   }
+}
+
+export const windowIdModuleSelector = 'moduleSelector_window_id';
+
+export async function startApplication(
+  mainModuleIndex: number | undefined | null,
+  nestedModuleIndex: number | undefined | null,
+  app: VcsUiApp,
+  modules: Module<ModuleType>[],
+  basisModule?: BasisModule,
+): Promise<void> {
+  await unloadModule(app);
+
+  if (mainModuleIndex === null && !basisModule) return;
+
+  const mainModule = modules[mainModuleIndex!];
+  const nestedModule =
+    mainModule?.type === 'group'
+      ? mainModule.cards?.[nestedModuleIndex!]
+      : null;
+
+  if (nestedModule?.moduleUrl) {
+    await loadModule(nestedModule.moduleUrl, app);
+  } else if (mainModule?.type === 'url') {
+    await loadModule(mainModule.moduleUrl, app);
+  }
+  app.windowManager.remove(windowIdModuleSelector);
 }

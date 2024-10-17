@@ -1,15 +1,17 @@
 import {
+  ButtonLocation,
+  createToggleAction,
   VcsPlugin,
   VcsUiApp,
-  WindowSlot,
-  ButtonLocation,
   WindowPositionOptions,
-  createToggleAction,
+  WindowSlot,
 } from '@vcmap/ui';
 import { Ref, ref } from 'vue';
-import { name, version, mapVersion } from '../package.json';
-import moduleSelector, { windowIdModuleSelector } from './ModuleSelector.vue';
+import { parseBoolean, parseInteger } from '@vcsuite/parsers';
+import { mapVersion, name, version } from '../package.json';
+import moduleSelector from './ModuleSelector.vue';
 import getDefaultOptions from './defaultOptions.js';
+import { startApplication, windowIdModuleSelector } from './moduleHelper';
 
 export type BasisModule = {
   title: string;
@@ -24,10 +26,7 @@ export type Module<T extends ModuleType> = T extends 'group'
     ? BasisModule & { moduleUrl: string; type: T }
     : never;
 
-type PluginConfig = Record<never, never>;
-type PluginState = Record<never, never>;
-
-export type ModuleSelectorConfig = PluginConfig & {
+export type ModuleSelectorConfig = {
   windowTitle?: string;
   isActiveOnStart?: boolean;
   requireModuleSelection?: boolean;
@@ -36,7 +35,19 @@ export type ModuleSelectorConfig = PluginConfig & {
   modules: Array<Module<ModuleType>>;
 };
 
-export type ModuleSelectorPlugin = VcsPlugin<PluginConfig, PluginState> & {
+export type PluginState = {
+  // selectedMainModuleIndex
+  smi?: number | undefined | null;
+  // selectedNestedModuleIndex
+  snmi?: number | undefined | null;
+  // module elector window open
+  w?: boolean;
+};
+
+export type ModuleSelectorPlugin = VcsPlugin<
+  Partial<ModuleSelectorConfig>,
+  PluginState
+> & {
   readonly config: ModuleSelectorConfig;
   selectedMainModuleIndex: Ref<number | undefined | null>;
   selectedNestedModuleIndex: Ref<number | undefined | null>;
@@ -45,6 +56,7 @@ export type ModuleSelectorPlugin = VcsPlugin<PluginConfig, PluginState> & {
 export default function plugin(
   configInput: ModuleSelectorConfig,
 ): ModuleSelectorPlugin {
+  let app: VcsUiApp;
   return {
     get name(): string {
       return name;
@@ -60,7 +72,11 @@ export default function plugin(
     },
     selectedMainModuleIndex: ref(undefined),
     selectedNestedModuleIndex: ref(undefined),
-    initialize(vcsUiApp: VcsUiApp): Promise<void> {
+    async initialize(
+      vcsUiApp: VcsUiApp,
+      state: PluginState | undefined,
+    ): Promise<void> {
+      app = vcsUiApp;
       const moduleSelectorComponent = {
         id: windowIdModuleSelector,
         component: moduleSelector,
@@ -75,6 +91,35 @@ export default function plugin(
           requireModuleSelection: this.config.requireModuleSelection,
         },
       };
+      if (state) {
+        const smi = parseInteger(state.smi);
+        const snmi = parseInteger(state.snmi);
+        const w = parseBoolean(state.w);
+        const { modules } = this.config;
+
+        if (smi !== undefined && smi < modules?.length) {
+          this.selectedMainModuleIndex.value = smi;
+          const selectedModule = modules[smi];
+
+          if (
+            snmi !== undefined &&
+            selectedModule?.type === 'group' &&
+            snmi < selectedModule?.cards?.length
+          ) {
+            this.selectedNestedModuleIndex.value = snmi;
+          }
+        }
+
+        if (!w) {
+          await startApplication(
+            this.selectedMainModuleIndex.value,
+            this.selectedNestedModuleIndex.value,
+            app,
+            configInput.modules,
+            configInput.basisModule,
+          );
+        }
+      }
 
       const { action } = createToggleAction(
         {
@@ -83,11 +128,11 @@ export default function plugin(
           icon: 'mdi-view-grid',
         },
         moduleSelectorComponent,
-        vcsUiApp.windowManager,
+        app.windowManager,
         name,
       );
 
-      vcsUiApp.navbarManager.add(
+      app.navbarManager.add(
         {
           id: action.name,
           action,
@@ -96,13 +141,23 @@ export default function plugin(
         ButtonLocation.PROJECT,
       );
 
-      if (configInput.isActiveOnStart) {
-        vcsUiApp.windowManager.add(moduleSelectorComponent, name);
+      if ((state && state.w) || (!state && configInput.isActiveOnStart)) {
+        app.windowManager.add(moduleSelectorComponent, name);
       }
 
       return Promise.resolve();
     },
     getDefaultOptions,
+    getState(): PluginState {
+      const smi = this.selectedMainModuleIndex?.value;
+      const snmi = this.selectedNestedModuleIndex?.value;
+      const windowState = app.windowManager.has(windowIdModuleSelector);
+      const isActive = this.config.isActiveOnStart;
+
+      return smi !== undefined || snmi !== undefined || windowState !== isActive
+        ? { smi, snmi, w: windowState }
+        : {};
+    },
     toJSON(): Partial<ModuleSelectorConfig> {
       const serial: Partial<ModuleSelectorConfig> = {};
       if (configInput.windowTitle != null) {

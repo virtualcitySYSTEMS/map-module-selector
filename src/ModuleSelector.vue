@@ -77,7 +77,15 @@
         <VcsFormButton
           variant="filled"
           class="ma-5"
-          @click="startApplication"
+          @click="
+            startApplication(
+              plugin.selectedMainModuleIndex.value,
+              plugin.selectedNestedModuleIndex.value,
+              app,
+              modules,
+              basisModule,
+            )
+          "
           :disabled="isButtonDisabled"
         >
           {{ $st('moduleSelector.startButton') }}
@@ -99,14 +107,14 @@
   } from 'vuetify/components';
   import { VcsFormButton, VcsUiApp } from '@vcmap/ui';
   import { computed, defineComponent, inject, PropType } from 'vue';
-  import { loadModule, unloadModule } from './moduleHelper.js';
   import { name } from '../package.json';
   import { BasisModule, ModuleSelectorPlugin, ModuleType } from './index.js';
   import type { Module } from './index.ts';
+  import { startApplication } from './moduleHelper';
 
-  export const windowIdModuleSelector = 'moduleSelector_window_id';
   export default defineComponent({
     name: 'ModuleSelector',
+    methods: { startApplication },
     components: {
       VSheet,
       VContainer,
@@ -168,29 +176,6 @@
         plugin.selectedMainModuleIndex.value = null;
       };
 
-      const startApplication = async (): Promise<void> => {
-        await unloadModule(app);
-
-        const mainModuleIndex = plugin.selectedMainModuleIndex.value;
-        const nestedModuleIndex = plugin.selectedNestedModuleIndex.value;
-
-        if (mainModuleIndex === null && !props.basisModule) return;
-
-        const mainModule = modules[mainModuleIndex!];
-        const nestedModule =
-          mainModule?.type === 'group'
-            ? mainModule.cards?.[nestedModuleIndex!]
-            : null;
-
-        if (nestedModule?.moduleUrl) {
-          await loadModule(nestedModule.moduleUrl, app);
-        } else if (mainModule?.type === 'url') {
-          await loadModule(mainModule.moduleUrl, app);
-        }
-
-        app.windowManager.remove(windowIdModuleSelector);
-      };
-
       const isButtonDisabled = computed(() => {
         if (!props.requireModuleSelection) return false;
 
@@ -212,8 +197,8 @@
         selectModule,
         selectNestedModule,
         showMainCards,
-        startApplication,
         isButtonDisabled,
+        app,
       };
     },
   });
