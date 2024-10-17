@@ -46,7 +46,10 @@ export async function startApplication(
 ): Promise<void> {
   await unloadModule(app);
 
-  if (mainModuleIndex === null && !basisModule) return;
+  if (mainModuleIndex === null && !basisModule) {
+    app.windowManager.remove(windowIdModuleSelector);
+    return;
+  }
 
   const mainModule = modules[mainModuleIndex!];
   const nestedModule =
