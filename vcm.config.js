@@ -51,6 +51,10 @@ export default {
             name: '@vcmap/create-link',
             entry: 'plugins/@vcmap/create-link/index.js?mapVersion=5.3.7',
           },
+          {
+            name: '@vcmap-show-case/plugin-editors',
+            entry: 'plugins/@vcmap-show-case/plugin-editors/index.js',
+          },
         ],
         startingMapName: 'CesiumMap',
       },

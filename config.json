@@ -1,25 +1,26 @@
 {
   "name": "module-selector",
   "isActiveOnStart": true,
-  "requireModuleSelection": false,
-  "basisModule": {
-    "title": "BASISZWILLING",
-    "icon": "mdi-home-city"
-  },
+  "requireModuleSelection": true,
+  "windowTitle": "This is a title",
+  "position": { "top": "10%", "width": "500px", "height": "500px" },
   "modules": [
     {
+      "name": "1",
       "type": "url",
       "title": "UMWELT",
       "icon": "mdi-leaf",
       "moduleUrl": "testUrl"
     },
     {
+      "name": "2",
       "type": "url",
       "title": "Dev Module",
       "icon": "mdi-thermometer",
       "moduleUrl": "/node_modules/@vcmap/ui/config/www.config.json"
     },
     {
+      "name": "3",
       "type": "group",
       "title": "Wasserstand",
       "icon": "mdi-waves",

@@ -1,6 +1,7 @@
 import {
   ButtonLocation,
   createToggleAction,
+  PluginConfigEditor,
   VcsPlugin,
   VcsUiApp,
   WindowPositionOptions,
@@ -8,9 +9,11 @@ import {
 } from '@vcmap/ui';
 import { Ref, ref } from 'vue';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
+import equal from 'fast-deep-equal';
 import { mapVersion, name, version } from '../package.json';
 import moduleSelector from './ModuleSelector.vue';
 import getDefaultOptions from './defaultOptions.js';
+import ModuleSelectorConfigEditor from './config/ModuleSelectorConfigEditor.vue';
 import { startApplication, windowIdModuleSelector } from './moduleHelper';
 
 export type BasisModule = {
@@ -32,7 +35,7 @@ export type ModuleSelectorConfig = {
   requireModuleSelection?: boolean;
   position?: WindowPositionOptions;
   basisModule?: BasisModule;
-  modules: Array<Module<ModuleType>>;
+  modules?: Array<Module<ModuleType>>;
 };
 
 export type PluginState = {
@@ -42,6 +45,7 @@ export type PluginState = {
   snmi?: number | undefined | null;
   // module elector window open
   w?: boolean;
+  modules?: Array<Module<ModuleType>>;
 };
 
 export type ModuleSelectorPlugin = VcsPlugin<
@@ -84,6 +88,7 @@ export default function plugin(
         position: this.config.position,
         state: {
           headerTitle: this.config.windowTitle,
+          infoUrlCallback: app.getHelpUrlCallback('/tools/moduleSelector.html'),
         },
         props: {
           modules: this.config.modules,
@@ -115,7 +120,7 @@ export default function plugin(
             this.selectedMainModuleIndex.value,
             this.selectedNestedModuleIndex.value,
             app,
-            configInput.modules,
+            configInput.modules!,
             configInput.basisModule,
           );
         }
@@ -158,34 +163,115 @@ export default function plugin(
         ? { smi, snmi, w: windowState }
         : {};
     },
+    getConfigEditors(): PluginConfigEditor<object>[] {
+      return [
+        {
+          component: ModuleSelectorConfigEditor,
+          title: 'moduleSelector.name',
+          infoUrlCallback: app.getHelpUrlCallback(
+            '/components/plugins/moduleSelectorConfig.html',
+            'app-configurator',
+          ),
+        },
+      ];
+    },
     toJSON(): Partial<ModuleSelectorConfig> {
       const serial: Partial<ModuleSelectorConfig> = {};
-      if (configInput.windowTitle != null) {
-        serial.windowTitle = configInput.windowTitle;
+      const defaultOptions = getDefaultOptions();
+      if (this.config.windowTitle !== defaultOptions.windowTitle) {
+        serial.windowTitle = this.config.windowTitle;
       }
 
-      if (configInput.position != null) {
-        serial.position = configInput.position;
+      if (this.config.isActiveOnStart !== defaultOptions.isActiveOnStart) {
+        serial.isActiveOnStart = this.config.isActiveOnStart;
       }
 
-      if (configInput.modules != null) {
-        serial.modules = configInput.modules;
+      if (
+        this.config.requireModuleSelection !==
+        defaultOptions.requireModuleSelection
+      ) {
+        serial.requireModuleSelection = this.config.requireModuleSelection;
       }
+
+      if (!equal(this.config.position, defaultOptions.position)) {
+        serial.position = this.config.position;
+      }
+
+      if (!equal(this.config.modules, defaultOptions.modules)) {
+        serial.modules = this.config.modules;
+      }
+
+      if (!equal(this.config.basisModule, defaultOptions.basisModule)) {
+        serial.basisModule = this.config.basisModule;
+      }
+
       return serial;
     },
     i18n: {
       de: {
         moduleSelector: {
+          name: 'Modul Auswahl Editor',
           title: 'Themenkartenauswahl',
           startButton: 'Anwendung starten',
           cardBack: 'Zurück',
+          configEditor: {
+            TooltipAddModule: 'Modul hinzufügen',
+            TooltipEditModule: 'Modul bearbeiten',
+            TooltipEditGroup: 'Modul-Gruppe bearbeiten',
+            TooltipDeleteMG: 'Modul/Gruppe löschen',
+            error: 'Bitte tragen Sie einen Namen ein',
+            editorError: 'Bitte füllen Sie das Feld aus',
+            breadcrumbs: { overview: 'Übersicht', group: 'Gruppe' },
+            heading: 'Themen- & Modulzuordnung',
+            baseModule: 'Basismodul',
+            baseModuleCheckbox: 'Basismodul anzeigen',
+            title: 'Titel',
+            add: 'Module hinzufügen',
+            addGroup: 'Module Gruppe hinzufügen',
+            moduleName: 'Module Name',
+            moduleIcon: 'Icon Name',
+            moduleUrl: 'Module URL',
+            groupName: 'Gruppen Name',
+            back: 'Zurück',
+            general: 'Allgemeine Einstellungen',
+            isActiveOnStart: 'Themenkartenauswahl beim Start der Karte zeigen',
+            requireModuleSelection: 'Modulauswahl erforderlich machen',
+            windowTitle: 'Fenster Titel',
+            windowPosition: 'Fenster Position',
+          },
         },
       },
       en: {
         moduleSelector: {
+          name: 'Module Selector Editor',
           title: 'Theme map selection',
           startButton: 'Start application',
           cardBack: 'Back',
+          configEditor: {
+            TooltipAddModule: 'Add module',
+            TooltipEditModule: 'Edit module',
+            TooltipEditGroup: 'Edit module group',
+            TooltipDeleteMG: 'Delete module/group',
+            error: 'Please add a name',
+            editorError: 'Please fill in the field',
+            breadcrumbs: { overview: 'Overview', group: 'Group' },
+            heading: 'Topic & module assignment',
+            baseModule: 'Base module',
+            baseModuleCheckbox: 'Show base module',
+            title: 'Title',
+            add: 'Add module',
+            addGroup: 'Add module Group',
+            moduleName: 'Module name',
+            moduleIcon: 'Icon name',
+            moduleUrl: 'Module URL',
+            groupName: 'Group name',
+            back: 'Back',
+            general: 'General settings',
+            isActiveOnStart: 'Show theme map selection on map start',
+            requireModuleSelection: 'Require module selection',
+            windowTitle: 'Window title',
+            windowPosition: 'Window position',
+          },
         },
       },
     },
