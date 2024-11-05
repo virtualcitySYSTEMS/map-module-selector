@@ -4,6 +4,14 @@
   "requireModuleSelection": true,
   "windowTitle": "This is a title",
   "position": { "top": "10%", "width": "500px", "height": "500px" },
+  "serverUrl": "http://publisher",
+  "projectId": "f7zad3XZS8d4MBG3P",
+  "appId": "f77e5194-934f-4a8d-9a2c-bf1774ac18fc",
+  "token": "DSYJQ8NAEr3whKCXhIo9a7OV4ASz_NLrcqoxHFfYQBw",
+  "basisModule": {
+    "title": "BASISZWILLING",
+    "icon": "mdi-home-city"
+  },
   "modules": [
     {
       "name": "1",

@@ -16,7 +16,7 @@
             <v-col>
               <VcsTextField
                 id="moduleselector-window-title"
-                :placeholder="$t('moduleSelector.title')"
+                :placeholder="$st('moduleSelector.title')"
                 v-model="localConfig.windowTitle"
               />
             </v-col>
@@ -163,7 +163,7 @@
       heading="moduleSelector.configEditor.heading"
       :start-open="true"
       :header-actions="headerActions"
-      ><!--V-if currentItem group > cards || wenn url oder empty listItems-->
+    >
       <VcsList
         v-if="currentGroup === undefined"
         :items="listItemArray"
@@ -177,15 +177,25 @@
         @item-moved="move"
       />
       <v-dialog
-        v-if="editingItem"
-        :model-value="true"
+        v-model="editingItemDialogVisible"
         width="400"
         :persistent="true"
       >
         <ModuleEditor
           :model-value="editingItem"
-          @close="editingItem = undefined"
+          @close="editingItemDialogVisible = false"
           @submit="updateItem()"
+        />
+      </v-dialog>
+      <v-dialog
+        v-model="selectCloudItemDialogVisible"
+        width="1000"
+        :persistent="true"
+      >
+        <VcsModuleTable
+          :model-value="selectCloudItem"
+          @close="selectCloudItemDialogVisible = false"
+          @submit="updateCloudItem()"
         />
       </v-dialog>
     </VcsFormSection>
@@ -226,6 +236,7 @@
   import { Module, ModuleSelectorConfig, ModuleType } from '../index';
   import getDefaultOptions from '../defaultOptions.js';
   import WindowPositionSettings from './WindowPositionSettings.vue';
+  import CloudModuleSelector from './CloudModuleSelector.vue';
 
   interface VcsListItemWithLabel extends VcsListItem {
     id: string;
@@ -236,6 +247,7 @@
     cards?: VcsListItemWithLabel[];
   }
 
+  export const windowIdConfigEditor = 'configEditor_window_id';
   export default defineComponent({
     name: 'ModuleSelectorConfigEditor',
     components: {
@@ -253,6 +265,7 @@
       VBreadcrumbs,
       VBreadcrumbsItem,
       WindowPositionSettings,
+      VcsModuleTable: CloudModuleSelector,
     },
     props: {
       getConfig: {
@@ -271,13 +284,27 @@
       const listItemArray: Ref<VcsListItemWithLabel[]> = ref([]);
       const currentGroup: Ref<VcsListItemWithLabel | undefined> =
         ref(undefined);
-      const editingItem: Ref<
-        | { id: string; title: string; icon: string; moduleUrl: string }
-        | undefined
-      > = ref(undefined);
+      const editingItem: Ref<{
+        id: string;
+        title: string;
+        icon: string;
+        moduleUrl: string;
+      }> = ref({ id: '', title: '', icon: '', moduleUrl: '' });
+      const selectCloudItem: Ref<{
+        id: string;
+        title: string;
+        icon: string;
+        moduleUrl: string;
+      }> = ref({ id: '', title: '', icon: '', moduleUrl: '' });
+      const selectCloudItemDialogVisible: Ref<boolean> = ref(false);
+      const editingItemDialogVisible: Ref<boolean> = ref(false);
+      const groupItemDialogVisible: Ref<boolean> = ref(false);
       const listItems: Ref<VcsListItemWithLabel[] | undefined> = ref(undefined);
 
-      localConfig.value = { ...getDefaultOptions(), ...props.getConfig() };
+      localConfig.value = {
+        ...getDefaultOptions(),
+        ...props.getConfig(),
+      } as ModuleSelectorConfig;
 
       const basisModule = ref();
 
@@ -299,75 +326,12 @@
       });
       const headerActions = reactive<VcsAction[]>([]);
 
-      function removeIdAndActions(
-        item: VcsListItemWithLabel,
-      ): Module<ModuleType> {
-        if (item.type === 'url') {
-          return {
-            title: item.title,
-            type: item.type,
-            icon: item.icon,
-            moduleUrl: item.moduleUrl || '',
-          } as Module<'url'>;
-        } else {
-          const updatedCards =
-            item.cards?.map((card) => {
-              return {
-                title: card.title,
-                icon: card.icon,
-                moduleUrl: card.moduleUrl,
-                type: card.type,
-              };
-            }) || [];
-          return {
-            title: item.title,
-            type: item.type,
-            icon: item.icon,
-            ...(updatedCards.length ? { cards: updatedCards } : {}),
-          } as Module<'group'>;
-        }
-      }
-
-      const headerGroupAction = {
-        name: 'moduleSelector.configEditor.addGroup',
-        callback(): void {
-          const newGroup = {
-            type: 'group',
-            name: '',
-            id: '',
-            title: 'title',
-            icon: 'icon',
-            cards: [],
-          };
-
-          listItemArray.value?.push(newGroup);
-          currentGroup.value = newGroup;
-
-          const newIndex = listItemArray.value.indexOf(newGroup);
-
-          newGroup.id = `${newGroup.title}-${newIndex}`;
-
-          headerActions.splice(1, 1);
-          if (headerActions.length > 0) {
-            headerActions[0].icon = '$vcsPlus';
-            headerActions[0].title =
-              'moduleSelector.configEditor.TooltipAddModule';
-          }
-        },
-      };
-
-      function removeIdAndActionsFromArray(
-        items: VcsListItemWithLabel[],
-      ): Module<ModuleType>[] {
-        return items.map(removeIdAndActions);
-      }
-
       function createListItem(
         moduleInfo: Module<ModuleType>,
         index: number,
       ): VcsListItemWithLabel {
         const listItemObject: VcsListItemWithLabel = {
-          id: `${moduleInfo.title}-${index}`,
+          id: `${moduleInfo.title || 'undefined'}-${index}`,
           name: moduleInfo.title,
           title: moduleInfo.title,
           icon: moduleInfo.icon,
@@ -411,6 +375,7 @@
                   };
                 }
               }
+              editingItemDialogVisible.value = true;
             },
           });
         }
@@ -426,10 +391,10 @@
                 );
                 if (item) {
                   currentGroup.value = item;
-                  headerActions.splice(1, 1);
-                  if (headerActions.length > 0) {
-                    headerActions[0].icon = '$vcsPlus';
-                    headerActions[0].title =
+                  headerActions.splice(2, 1);
+                  if (headerActions.length > 1) {
+                    headerActions[1].icon = '$vcsPlus';
+                    headerActions[1].title =
                       'moduleSelector.configEditor.TooltipAddModule';
                   }
                 }
@@ -459,6 +424,80 @@
         return listItemObject;
       }
 
+      headerActions.push({
+        name: 'moduleSelector.configEditor.addFromCloud',
+        icon: '$vcsImport',
+        callback(): void {
+          selectCloudItem.value = {
+            id: '',
+            title: '',
+            icon: '',
+            moduleUrl: '',
+          };
+          selectCloudItemDialogVisible.value = true;
+        },
+      });
+
+      function removeIdAndActions(
+        item: VcsListItemWithLabel,
+      ): Module<ModuleType> {
+        if (item.type === 'url') {
+          const { actions, id, name, ...configItem } = item;
+          return {
+            ...configItem,
+            moduleUrl: item.moduleUrl || '',
+          } as Module<'url'>;
+        } else {
+          const updatedCards =
+            item.cards?.map((card) => {
+              const { actions, id, name, ...configItem } = card;
+              return {
+                ...configItem,
+              } as Module<'url'>;
+            }) || [];
+          const { actions, id, name, ...configItem } = item;
+          return {
+            ...configItem,
+            ...(updatedCards.length ? { cards: updatedCards } : {}),
+          } as Module<'group'>;
+        }
+      }
+
+      const headerGroupAction = {
+        name: 'moduleSelector.configEditor.addGroup',
+        callback(): void {
+          const newGroup = {
+            type: 'group',
+            title: '',
+            icon: '',
+            cards: [],
+          };
+
+          groupItemDialogVisible.value = true;
+          const indexItem = listItemArray.value?.push(
+            createListItem(
+              newGroup as Module<'group'>,
+              listItemArray.value.length,
+            ),
+          );
+
+          currentGroup.value = listItemArray.value[indexItem - 1];
+
+          headerActions.splice(2, 1);
+          if (headerActions.length > 1) {
+            headerActions[1].icon = '$vcsPlus';
+            headerActions[1].title =
+              'moduleSelector.configEditor.TooltipAddModule';
+          }
+        },
+      };
+
+      function removeIdAndActionsFromArray(
+        items: VcsListItemWithLabel[],
+      ): Module<ModuleType>[] {
+        return items.map(removeIdAndActions);
+      }
+
       if (localConfig.value?.modules) {
         listItemArray.value = localConfig.value.modules.map(createListItem);
       }
@@ -469,10 +508,11 @@
           callback(): void {
             editingItem.value = {
               id: '',
-              title: 'title',
-              icon: 'icon',
-              moduleUrl: 'url',
+              title: '',
+              icon: '',
+              moduleUrl: '',
             };
+            editingItemDialogVisible.value = true;
           },
         },
         headerGroupAction,
@@ -503,35 +543,30 @@
                 (i) => i.id === editingItem.value?.id,
               );
               if (item) {
-                item.title = editingItem.value.title;
-                item.icon = editingItem.value.icon;
-                item.moduleUrl = editingItem.value.moduleUrl;
+                Object.assign(item, {
+                  ...editingItem.value,
+                });
               }
             } else {
-              listItemArray.value.push({
-                id: `${editingItem.value.title}-${listItemArray.value.length}`,
-                title: editingItem.value.title,
-                name: editingItem.value.title,
-                icon: editingItem.value.icon,
-                moduleUrl: editingItem.value.moduleUrl,
-                type: 'url',
-              });
-
-              const filteredItems = removeIdAndActionsFromArray(
-                listItemArray.value,
+              listItemArray.value.push(
+                createListItem(
+                  {
+                    ...editingItem.value,
+                    type: 'url',
+                  },
+                  listItemArray.value.length,
+                ),
               );
-
-              listItemArray.value = filteredItems.map(createListItem);
             }
           }
         } else if (editingItem.value && editingItem.value?.id !== '') {
           const item = currentGroup.value.cards!.find(
-            (i) => i.id === editingItem.value!.id,
+            (i) => i.id === editingItem.value.id,
           );
           if (item) {
-            item.title = editingItem.value.title;
-            item.icon = editingItem.value.icon;
-            item.moduleUrl = editingItem.value.moduleUrl;
+            Object.assign(item, {
+              ...editingItem.value,
+            });
           }
 
           let groupId;
@@ -544,19 +579,15 @@
             (i) => i.id === groupId,
           );
         } else {
-          currentGroup.value.cards!.push({
-            id: `${editingItem.value!.title}-${currentGroup.value?.cards?.length}`,
-            title: editingItem.value!.title,
-            name: editingItem.value!.title,
-            icon: editingItem.value!.icon,
-            moduleUrl: editingItem.value!.moduleUrl,
-            type: 'url',
-          });
-          const filteredItems = removeIdAndActionsFromArray(
-            listItemArray.value,
+          currentGroup.value.cards!.push(
+            createListItem(
+              {
+                ...editingItem.value,
+                type: 'url',
+              },
+              currentGroup.value.cards!.length,
+            ),
           );
-
-          listItemArray.value = filteredItems.map(createListItem);
 
           let groupId;
           if (currentGroup.value?.id || currentGroup.value?.id !== '') {
@@ -569,14 +600,66 @@
           );
         }
 
-        editingItem.value = undefined;
+        editingItem.value = {
+          id: '',
+          title: '',
+          icon: '',
+          moduleUrl: '',
+        };
+        editingItemDialogVisible.value = false;
+      };
+
+      const updateCloudItem = (): void => {
+        if (currentGroup.value === undefined) {
+          if (selectCloudItem.value) {
+            listItemArray.value.push(
+              createListItem(
+                {
+                  title: selectCloudItem.value.title,
+                  icon: selectCloudItem.value.icon,
+                  moduleUrl: selectCloudItem.value.moduleUrl,
+                  type: 'url',
+                },
+                listItemArray.value.length,
+              ),
+            );
+          }
+        } else {
+          currentGroup.value.cards!.push(
+            createListItem(
+              {
+                ...selectCloudItem.value,
+                type: 'url',
+              },
+              currentGroup.value.cards!.length,
+            ),
+          );
+
+          let groupId;
+          if (currentGroup.value?.id || currentGroup.value?.id !== '') {
+            groupId = currentGroup.value.id;
+          } else {
+            groupId = `${currentGroup.value?.title}-${listItemArray.value.length - 1}`;
+          }
+          currentGroup.value = listItemArray.value?.find(
+            (item) => item.id === groupId,
+          );
+        }
+
+        selectCloudItem.value = {
+          id: '',
+          title: '',
+          icon: '',
+          moduleUrl: '',
+        };
+        selectCloudItemDialogVisible.value = false;
       };
 
       const returnLevel = (): void => {
         currentGroup.value = undefined;
-        if (headerActions.length > 0) {
-          delete headerActions[0].icon;
-          delete headerActions[0].title;
+        if (headerActions.length > 1) {
+          delete headerActions[1].icon;
+          delete headerActions[1].title;
         }
         headerActions.push(headerGroupAction);
       };
@@ -603,6 +686,9 @@
       });
       return {
         editingItem,
+        selectCloudItem,
+        editingItemDialogVisible,
+        selectCloudItemDialogVisible,
         localConfig,
         listItemArray,
         breadcrumbItems,
@@ -610,6 +696,7 @@
         apply,
         returnLevel,
         updateItem,
+        updateCloudItem,
         level,
         listItems: listItems as unknown as unknown[],
         basisModule,

@@ -33,6 +33,10 @@ export type ModuleSelectorConfig = {
   windowTitle?: string;
   isActiveOnStart?: boolean;
   requireModuleSelection?: boolean;
+  serverUrl?: string;
+  projectId?: string;
+  appId?: string;
+  token?: string;
   position?: WindowPositionOptions;
   basisModule?: BasisModule;
   modules?: Array<Module<ModuleType>>;
@@ -205,6 +209,22 @@ export default function plugin(
         serial.basisModule = this.config.basisModule;
       }
 
+      if (configInput.serverUrl != null) {
+        serial.serverUrl = configInput.serverUrl;
+      }
+
+      if (configInput.projectId != null) {
+        serial.projectId = configInput.projectId;
+      }
+
+      if (configInput.appId != null) {
+        serial.appId = configInput.appId;
+      }
+
+      if (configInput.token != null) {
+        serial.token = configInput.token;
+      }
+
       return serial;
     },
     i18n: {
@@ -215,6 +235,20 @@ export default function plugin(
           startButton: 'Anwendung starten',
           cardBack: 'Zurück',
           configEditor: {
+            moduleCloudPicker: {
+              searchName: 'Suche nach Name...',
+              continue: 'Weiter',
+              back: 'Zurück',
+              headers: {
+                name: 'Modul Name',
+                type: 'Typ',
+                description: 'Beschreibung',
+                createdAt: 'Erzeugt am',
+                updatedAt: 'Aktualisiert am',
+                createdBy: 'Erzeugt von',
+                updatedBy: 'Aktualisiert von',
+              },
+            },
             TooltipAddModule: 'Modul hinzufügen',
             TooltipEditModule: 'Modul bearbeiten',
             TooltipEditGroup: 'Modul-Gruppe bearbeiten',
@@ -248,6 +282,20 @@ export default function plugin(
           startButton: 'Start application',
           cardBack: 'Back',
           configEditor: {
+            moduleCloudPicker: {
+              searchName: 'Search for name...',
+              continue: 'Continue',
+              back: 'Back',
+              headers: {
+                name: 'Module name',
+                type: 'Type',
+                description: 'Description',
+                createdAt: 'Created at',
+                updatedAt: 'Updated at',
+                createdBy: 'Created by',
+                updatedBy: 'Created by',
+              },
+            },
             TooltipAddModule: 'Add module',
             TooltipEditModule: 'Edit module',
             TooltipEditGroup: 'Edit module group',
