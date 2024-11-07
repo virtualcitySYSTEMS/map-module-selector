@@ -1,6 +1,5 @@
 {
   "name": "module-selector",
-  "isActiveOnStart": true,
   "requireModuleSelection": true,
   "windowTitle": "This is a title",
   "position": { "top": "10%", "width": "500px", "height": "500px" },

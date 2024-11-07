@@ -222,6 +222,7 @@
     reactive,
     Ref,
     ref,
+    toRaw,
     watch,
   } from 'vue';
   import {
@@ -528,11 +529,27 @@
       });
 
       const apply = (): void => {
-        props.setConfig({
-          ...localConfig.value,
+        const position = toRaw(localConfig.value?.position) as Record<
+          string,
+          unknown
+        >;
+        const isPositionDefined = Object.values(position).some(
+          (value) => value !== undefined,
+        );
+
+        const config = {
+          ...toRaw(localConfig.value),
           modules: removeIdAndActionsFromArray(listItemArray.value),
-          basisModule: basisModule.value,
-        });
+          basisModule: toRaw(basisModule.value),
+        };
+
+        if (isPositionDefined) {
+          config.position = position;
+        } else {
+          delete config.position;
+        }
+
+        props.setConfig(config);
       };
 
       const updateItem = (): void => {

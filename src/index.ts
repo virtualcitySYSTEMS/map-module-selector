@@ -47,7 +47,7 @@ export type PluginState = {
   smi?: number | undefined | null;
   // selectedNestedModuleIndex
   snmi?: number | undefined | null;
-  // module elector window open
+  // module selector window open
   w?: boolean;
   modules?: Array<Module<ModuleType>>;
 };
@@ -124,8 +124,8 @@ export default function plugin(
             this.selectedMainModuleIndex.value,
             this.selectedNestedModuleIndex.value,
             app,
-            configInput.modules!,
-            configInput.basisModule,
+            this.config.modules,
+            this.config.basisModule,
           );
         }
       }
@@ -150,7 +150,7 @@ export default function plugin(
         ButtonLocation.PROJECT,
       );
 
-      if ((state && state.w) || (!state && configInput.isActiveOnStart)) {
+      if ((state && state.w) || (!state && this.config.isActiveOnStart)) {
         app.windowManager.add(moduleSelectorComponent, name);
       }
 
