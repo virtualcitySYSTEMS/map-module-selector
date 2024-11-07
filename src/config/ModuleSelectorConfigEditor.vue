@@ -39,24 +39,6 @@
           </v-row>
         </v-container>
       </VcsFormSection>
-      <VcsFormSection
-        heading="moduleSelector.configEditor.windowPosition"
-        :expandable="true"
-      >
-        <WindowPositionSettings
-          v-model="localConfig.position!"
-          :position-keys="[
-            'top',
-            'right',
-            'bottom',
-            'left',
-            'width',
-            'maxWidth',
-            'height',
-            'maxHeight',
-          ]"
-        />
-      </VcsFormSection>
       <VcsFormSection heading="moduleSelector.configEditor.baseModule">
         <v-container class="py-0 px-1">
           <v-row no-gutters>
@@ -198,6 +180,24 @@
           @submit="updateCloudItem()"
         />
       </v-dialog>
+    </VcsFormSection>
+    <VcsFormSection
+      heading="moduleSelector.configEditor.windowPosition"
+      :expandable="true"
+    >
+      <WindowPositionSettings
+        v-model="localConfig.position!"
+        :position-keys="[
+          'top',
+          'right',
+          'bottom',
+          'left',
+          'width',
+          'maxWidth',
+          'height',
+          'maxHeight',
+        ]"
+      />
     </VcsFormSection>
   </AbstractConfigEditor>
 </template>

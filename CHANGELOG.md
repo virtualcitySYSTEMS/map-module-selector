@@ -1,3 +1,8 @@
+# v2.0.3
+
+- Reorder ConfigEditor options
+- Fix a localization error
+
 # v2.0.1
 
 - Integration of a Publisher Cloud Connection to load existing Modules in the Editor

@@ -293,7 +293,7 @@ export default function plugin(
                 createdAt: 'Created at',
                 updatedAt: 'Updated at',
                 createdBy: 'Created by',
-                updatedBy: 'Created by',
+                updatedBy: 'Updated by',
               },
             },
             TooltipAddModule: 'Add module',
