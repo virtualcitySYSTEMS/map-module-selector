@@ -8,12 +8,24 @@
           v-if="basisModule && !nestedCards.length"
         >
           <v-card class="pa-3 fixed-card selected-card" outlined>
-            <v-icon v-if="basisModule.icon" size="50">{{
-              basisModule.icon
-            }}</v-icon>
-            <v-card-title class="text-center">{{
-              $st(basisModule.title)
-            }}</v-card-title>
+            <v-tooltip :max-width="300">
+              <template #activator="{ props }">
+                <v-icon
+                  v-if="basisModule.description"
+                  class="top-right-icon"
+                  v-bind="props"
+                  >{{ '$vcsInfo' }}
+                </v-icon>
+              </template>
+              <span>{{ $st(basisModule.description) }}</span>
+            </v-tooltip>
+            <v-icon v-if="basisModule.icon" size="50">
+              {{ basisModule.icon }}
+            </v-icon>
+
+            <v-card-title class="text-center">
+              {{ $st(basisModule.title) }}
+            </v-card-title>
           </v-card>
         </v-col>
         <template v-if="!nestedCards.length">
@@ -31,6 +43,17 @@
               }"
               @click="selectModule(index)"
             >
+              <v-tooltip :max-width="300">
+                <template #activator="{ props }">
+                  <v-icon
+                    v-if="module.description"
+                    class="top-right-icon"
+                    v-bind="props"
+                    >{{ '$vcsInfo' }}
+                  </v-icon>
+                </template>
+                <span>{{ $st(module.description) }}</span>
+              </v-tooltip>
               <v-icon v-if="module.icon" size="50">{{ module.icon }}</v-icon>
               <v-card-title class="text-center">{{
                 $st(module.title)
@@ -65,6 +88,18 @@
               }"
               @click="selectNestedModule(index)"
             >
+              <v-tooltip :max-width="300">
+                <template #activator="{ props }">
+                  <v-icon
+                    v-if="card.description"
+                    class="top-right-icon"
+                    v-bind="props"
+                    >{{ '$vcsInfo' }}
+                  </v-icon>
+                </template>
+                <span>{{ $st(card.description) }}</span>
+              </v-tooltip>
+
               <v-icon v-if="card.icon" size="50">{{ card.icon }}</v-icon>
               <v-card-title class="text-center">{{
                 $st(card.title)
@@ -104,6 +139,7 @@
     VCard,
     VIcon,
     VCardTitle,
+    VTooltip,
   } from 'vuetify/components';
   import { VcsFormButton, VcsUiApp } from '@vcmap/ui';
   import { computed, defineComponent, inject, PropType } from 'vue';
@@ -124,6 +160,7 @@
       VIcon,
       VCardTitle,
       VcsFormButton,
+      VTooltip,
     },
     props: {
       modules: {
@@ -224,5 +261,14 @@
   .selected-card {
     background-color: rgb(var(--v-theme-primary));
     color: rgb(var(--v-theme-on-primary));
+  }
+
+  .top-right-icon {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+    cursor: pointer;
+    color: rgb(var(--v-theme-on-surface));
   }
 </style>

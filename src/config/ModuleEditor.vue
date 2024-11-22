@@ -48,6 +48,19 @@
               />
             </v-col>
           </v-row>
+          <v-row no-gutters>
+            <v-col cols="6">
+              <VcsLabel html-for="moduleDescription">
+                {{ $st('moduleSelector.configEditor.moduleDescription') }}
+              </VcsLabel>
+            </v-col>
+            <v-col cols="6">
+              <VcsTextArea
+                id="moduleDescription"
+                v-model="localModuleOptions.description"
+              />
+            </v-col>
+          </v-row>
         </v-container>
       </v-form>
       <v-divider />
@@ -76,6 +89,7 @@
     VcsFormSection,
     VcsLabel,
     VcsTextField,
+    VcsTextArea,
   } from '@vcmap/ui';
   import {
     VCard,
@@ -100,6 +114,7 @@
       VDivider,
       VCard,
       VcsFormSection,
+      VcsTextArea,
     },
     props: {
       modelValue: {
@@ -108,6 +123,7 @@
           title: string;
           icon: string;
           moduleUrl: string;
+          description?: string;
         }>,
         required: true,
       },

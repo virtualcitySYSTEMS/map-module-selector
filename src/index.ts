@@ -19,6 +19,7 @@ import { startApplication, windowIdModuleSelector } from './moduleHelper';
 export type BasisModule = {
   title: string;
   icon: string;
+  description?: string;
 };
 
 export type ModuleType = 'group' | 'url';
@@ -249,6 +250,7 @@ export default function plugin(
                 updatedBy: 'Aktualisiert von',
               },
             },
+            TooltipAddCloudModule: 'Modul aus Projekt hinzufügen',
             TooltipAddModule: 'Modul hinzufügen',
             TooltipEditModule: 'Modul bearbeiten',
             TooltipEditGroup: 'Modul-Gruppe bearbeiten',
@@ -260,11 +262,13 @@ export default function plugin(
             baseModule: 'Basismodul',
             baseModuleCheckbox: 'Basismodul anzeigen',
             title: 'Titel',
-            add: 'Module hinzufügen',
-            addGroup: 'Module Gruppe hinzufügen',
-            moduleName: 'Module Name',
+            add: 'Modul per URL hinzufügen',
+            addGroup: 'Gruppe hinzufügen',
+            moduleName: 'Modul Name',
             moduleIcon: 'Icon Name',
-            moduleUrl: 'Module URL',
+            moduleUrl: 'Modul URL',
+            moduleDescription: 'Modul Beschreibung',
+            groupDescription: 'Gruppen Beschreibung',
             groupName: 'Gruppen Name',
             back: 'Zurück',
             general: 'Allgemeine Einstellungen',
@@ -296,6 +300,7 @@ export default function plugin(
                 updatedBy: 'Updated by',
               },
             },
+            TooltipAddCloudModule: 'Add module from project',
             TooltipAddModule: 'Add module',
             TooltipEditModule: 'Edit module',
             TooltipEditGroup: 'Edit module group',
@@ -307,11 +312,13 @@ export default function plugin(
             baseModule: 'Base module',
             baseModuleCheckbox: 'Show base module',
             title: 'Title',
-            add: 'Add module',
-            addGroup: 'Add module Group',
+            add: 'Add module via URL',
+            addGroup: 'Add group',
             moduleName: 'Module name',
             moduleIcon: 'Icon name',
             moduleUrl: 'Module URL',
+            moduleDescription: 'Module description',
+            groupDescription: 'Group description',
             groupName: 'Group name',
             back: 'Back',
             general: 'General settings',

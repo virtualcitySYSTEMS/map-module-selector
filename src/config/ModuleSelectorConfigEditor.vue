@@ -91,6 +91,19 @@
               />
             </v-col>
           </v-row>
+          <v-row v-if="basisModuleExists" no-gutters>
+            <v-col cols="6">
+              <VcsLabel html-for="basisModuleDescription">
+                {{ $st('moduleSelector.configEditor.moduleDescription') }}
+              </VcsLabel>
+            </v-col>
+            <v-col>
+              <VcsTextArea
+                id="basisModuleDescription"
+                v-model="basisModule.description"
+              />
+            </v-col>
+          </v-row>
         </v-container>
       </VcsFormSection>
     </v-container>
@@ -99,9 +112,9 @@
         <template #item="{ item }">
           <v-breadcrumbs-item
             :key="item.title"
-            :disabled="item.disabled"
+            :disabled="item.disabled || !isFormValid"
             :href="item.href"
-            @click="item.disabled ? null : returnLevel()"
+            @click="item.disabled || !isFormValid ? null : returnLevel()"
           >
             {{ item.title }}
           </v-breadcrumbs-item>
@@ -137,6 +150,20 @@
             :rules="[
               (v: string) => !!v || 'moduleSelector.configEditor.editorError',
             ]"
+          />
+        </v-col>
+      </v-row>
+      <v-row no-gutters>
+        <v-col cols="6">
+          <VcsLabel html-for="groupModuleDescription">
+            {{ $st('moduleSelector.configEditor.groupDescription') }}
+          </VcsLabel>
+        </v-col>
+        <v-col>
+          <VcsTextArea
+            id="groupModuleDescription"
+            placeholder=""
+            v-model="currentGroup!.description"
           />
         </v-col>
       </v-row>
@@ -182,6 +209,7 @@
       </v-dialog>
     </VcsFormSection>
     <VcsFormSection
+      v-if="currentGroup === undefined"
       heading="moduleSelector.configEditor.windowPosition"
       :expandable="true"
     >
@@ -213,6 +241,7 @@
     VcsListItem,
     VcsTextField,
     VcsUiApp,
+    VcsTextArea,
   } from '@vcmap/ui';
   import {
     computed,
@@ -245,7 +274,15 @@
     icon: string;
     type: string;
     moduleUrl?: string;
+    description?: string;
     cards?: VcsListItemWithLabel[];
+  }
+  interface ModuleItem {
+    id: string;
+    title: string;
+    icon: string;
+    moduleUrl: string;
+    description?: string;
   }
 
   export const windowIdConfigEditor = 'configEditor_window_id';
@@ -267,6 +304,7 @@
       VBreadcrumbsItem,
       WindowPositionSettings,
       VcsModuleTable: CloudModuleSelector,
+      VcsTextArea,
     },
     props: {
       getConfig: {
@@ -285,18 +323,20 @@
       const listItemArray: Ref<VcsListItemWithLabel[]> = ref([]);
       const currentGroup: Ref<VcsListItemWithLabel | undefined> =
         ref(undefined);
-      const editingItem: Ref<{
-        id: string;
-        title: string;
-        icon: string;
-        moduleUrl: string;
-      }> = ref({ id: '', title: '', icon: '', moduleUrl: '' });
-      const selectCloudItem: Ref<{
-        id: string;
-        title: string;
-        icon: string;
-        moduleUrl: string;
-      }> = ref({ id: '', title: '', icon: '', moduleUrl: '' });
+      const editingItem: Ref<ModuleItem> = ref({
+        id: '',
+        title: '',
+        icon: '',
+        moduleUrl: '',
+        description: '',
+      });
+      const selectCloudItem: Ref<ModuleItem> = ref({
+        id: '',
+        title: '',
+        icon: '',
+        moduleUrl: '',
+        description: '',
+      });
       const selectCloudItemDialogVisible: Ref<boolean> = ref(false);
       const editingItemDialogVisible: Ref<boolean> = ref(false);
       const groupItemDialogVisible: Ref<boolean> = ref(false);
@@ -337,6 +377,7 @@
           title: moduleInfo.title,
           icon: moduleInfo.icon,
           type: moduleInfo.type,
+          description: moduleInfo.description,
           actions: [],
         };
         if (moduleInfo.type === 'url') {
@@ -360,6 +401,7 @@
                     title: item.title,
                     icon: item.icon,
                     moduleUrl: item.moduleUrl!,
+                    description: item.description,
                   };
                 }
               } else {
@@ -373,6 +415,7 @@
                     title: item.title,
                     icon: item.icon,
                     moduleUrl: item.moduleUrl!,
+                    description: item.description,
                   };
                 }
               }
@@ -427,6 +470,7 @@
 
       headerActions.push({
         name: 'moduleSelector.configEditor.addFromCloud',
+        title: 'moduleSelector.configEditor.TooltipAddCloudModule',
         icon: '$vcsImport',
         callback(): void {
           selectCloudItem.value = {
@@ -434,6 +478,7 @@
             title: '',
             icon: '',
             moduleUrl: '',
+            description: '',
           };
           selectCloudItemDialogVisible.value = true;
         },
@@ -471,6 +516,7 @@
             type: 'group',
             title: '',
             icon: '',
+            description: '',
             cards: [],
           };
 
@@ -512,6 +558,7 @@
               title: '',
               icon: '',
               moduleUrl: '',
+              description: '',
             };
             editingItemDialogVisible.value = true;
           },
@@ -622,6 +669,7 @@
           title: '',
           icon: '',
           moduleUrl: '',
+          description: '',
         };
         editingItemDialogVisible.value = false;
       };
@@ -636,6 +684,7 @@
                   icon: selectCloudItem.value.icon,
                   moduleUrl: selectCloudItem.value.moduleUrl,
                   type: 'url',
+                  description: selectCloudItem.value.description,
                 },
                 listItemArray.value.length,
               ),
@@ -668,6 +717,7 @@
           title: '',
           icon: '',
           moduleUrl: '',
+          description: '',
         };
         selectCloudItemDialogVisible.value = false;
       };
@@ -695,6 +745,11 @@
           href: '#',
         },
       ]);
+
+      const isFormValid = computed(() => {
+        return !!currentGroup.value?.title && !!currentGroup.value?.icon;
+      });
+
       watch(currentGroup, (currentG) => {
         if (currentG && currentG.title) {
           breadcrumbItems.value[1].title = `${app.vueI18n.t('moduleSelector.configEditor.breadcrumbs.group')}: ${currentG.title}`;
@@ -702,6 +757,7 @@
         }
       });
       return {
+        isFormValid,
         editingItem,
         selectCloudItem,
         editingItemDialogVisible,

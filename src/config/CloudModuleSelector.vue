@@ -70,6 +70,20 @@
                 />
               </v-col>
             </v-row>
+            <v-row no-gutters class="px-2">
+              <v-col cols="2">
+                <VcsLabel html-for="moduleDescription">
+                  {{ $st('moduleSelector.configEditor.moduleDescription') }}
+                </VcsLabel>
+              </v-col>
+              <v-col cols="4">
+                <VcsTextArea
+                  id="moduleDescription"
+                  v-model="selectedItem.description"
+                  :rules="[requiredRule]"
+                />
+              </v-col>
+            </v-row>
           </v-container>
         </v-form>
       </VcsFormSection>
@@ -123,6 +137,7 @@
     VcsTextField,
     VcsFormSection,
     VcsPlugin,
+    VcsTextArea,
   } from '@vcmap/ui';
   import { computed, defineComponent, inject, PropType, ref } from 'vue';
   import {
@@ -233,6 +248,7 @@
       VCol,
       VForm,
       VContainer,
+      VcsTextArea,
     },
     props: {
       modelValue: {
@@ -241,6 +257,7 @@
           title: string;
           icon: string;
           moduleUrl: string;
+          description?: string;
         }>,
         required: true,
       },
@@ -252,10 +269,19 @@
         '@vcmap/app-configurator',
       ) as VcsPlugin<object, object> & {
         getUserName(userId: string): string;
-        config: object & { projectId: string };
+        config: object & {
+          projectId: string;
+          serverUrl: string;
+          appId: string;
+          token: string;
+        };
       };
 
-      setupPublisherSDK(appConfigurator.config || plugin.config);
+      const { serverUrl, projectId, appId, token } =
+        appConfigurator?.config || plugin.config;
+      const publisherOptions = { serverUrl, projectId, appId, token };
+
+      setupPublisherSDK(publisherOptions);
 
       const loading = ref(true);
       const items = ref<ModuleTableItem[]>([]);
@@ -263,7 +289,13 @@
       const totalPages = ref(0);
       const selected = ref<
         [
-          | { _id: string; name: string; icon: string; moduleUrl: string }
+          | {
+              _id: string;
+              name: string;
+              icon: string;
+              moduleUrl: string;
+              description?: string;
+            }
           | undefined,
         ]
       >([undefined]);
@@ -274,6 +306,7 @@
         title: string;
         icon: string;
         moduleUrl: string;
+        description?: string;
       }>(props.modelValue);
       const isItemIdEmpty = computed(() => selectedItem.value.id === '');
 
@@ -292,9 +325,9 @@
       function getItems(options: UpdateItemsEvent): void {
         const { itemsPerPage, page, search, sortBy, sortDesc } = options;
         loading.value = true;
-        if (appConfigurator?.config?.projectId) {
+        if (publisherOptions.projectId) {
           getProjectModules({
-            projectId: appConfigurator.config.projectId,
+            projectId: publisherOptions.projectId,
             limit: itemsPerPage,
             page: page - 1,
             name: search,
@@ -337,6 +370,9 @@
             .finally(() => {
               loading.value = false;
             });
+        } else {
+          items.value = [];
+          loading.value = false;
         }
       }
 
@@ -350,12 +386,14 @@
           selectedItem.value.title = selected.value[0]!.name;
           selectedItem.value.icon = '';
           selectedItem.value.moduleUrl = `configs/${selected.value[0]!._id}.json`;
+          selectedItem.value.description = selected.value[0]!.description;
         }
       };
       const removeSelected = (): void => {
         selectedItem.value.id = '';
         selectedItem.value.title = '';
         selectedItem.value.icon = '';
+        selectedItem.value.description = '';
         selectedItem.value.moduleUrl = '';
       };
 
