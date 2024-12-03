@@ -4,7 +4,7 @@
     v-if="localConfig"
     v-bind="{ ...$attrs, ...$props }"
   >
-    <v-container v-if="currentGroup === undefined" class="py-0 px-0">
+    <v-container class="py-0 px-0">
       <VcsFormSection heading="moduleSelector.configEditor.general">
         <v-container class="py-0 px-1">
           <v-row no-gutters>
@@ -107,84 +107,100 @@
         </v-container>
       </VcsFormSection>
     </v-container>
-    <v-container v-else class="py-0 px-1">
-      <v-breadcrumbs :items="breadcrumbItems" divider="/">
-        <template #item="{ item }">
-          <v-breadcrumbs-item
-            :key="item.title"
-            :disabled="item.disabled || !isFormValid"
-            :href="item.href"
-            @click="item.disabled || !isFormValid ? null : returnLevel()"
+    <v-dialog v-model="groupItemDialogVisible" width="800" :persistent="true">
+      <v-sheet v-if="currentGroup">
+        <VcsFormSection
+          heading="moduleSelector.configEditor.groupHeading"
+          :start-open="true"
+        >
+          <v-form v-model="isFormValid">
+            <v-container class="py-0 px-1">
+              <v-row no-gutters>
+                <v-col cols="6">
+                  <VcsLabel required html-for="groupModuleName">
+                    {{ $st('moduleSelector.configEditor.groupName') }}
+                  </VcsLabel>
+                </v-col>
+                <v-col>
+                  <VcsTextField
+                    id="groupModuleName"
+                    placeholder="Module Name"
+                    v-model="currentGroup.title"
+                    :rules="[isRequired]"
+                  />
+                </v-col>
+              </v-row>
+              <v-row no-gutters>
+                <v-col cols="6">
+                  <VcsLabel required html-for="groupModuleIcon">
+                    {{ $st('moduleSelector.configEditor.moduleIcon') }}
+                  </VcsLabel>
+                </v-col>
+                <v-col>
+                  <VcsTextField
+                    id="groupModuleIcon"
+                    placeholder="Module Icon"
+                    v-model="currentGroup.icon"
+                    :rules="[isRequired]"
+                  />
+                </v-col>
+              </v-row>
+              <v-row no-gutters>
+                <v-col cols="6">
+                  <VcsLabel html-for="groupModuleDescription">
+                    {{ $st('moduleSelector.configEditor.groupDescription') }}
+                  </VcsLabel>
+                </v-col>
+                <v-col>
+                  <VcsTextArea
+                    id="groupModuleDescription"
+                    placeholder=""
+                    v-model="currentGroup.description"
+                  />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-form>
+        </VcsFormSection>
+        <VcsFormSection
+          heading="moduleSelector.configEditor.heading"
+          :start-open="true"
+          :header-actions="headerActions"
+        >
+          <VcsList
+            class="draggable-list"
+            :items="currentGroup.cards"
+            :draggable="true"
+            @item-moved="moveCard"
+          />
+        </VcsFormSection>
+        <div class="d-flex px-2 justify-end w-100">
+          <VcsFormButton
+            variant="filled"
+            class="ma-2"
+            :disabled="!isFormValid"
+            @click="returnLevel()"
           >
-            {{ item.title }}
-          </v-breadcrumbs-item>
-        </template>
-      </v-breadcrumbs>
+            {{ $t('components.apply') }}
+          </VcsFormButton>
+          <VcsFormButton class="ma-2" @click="cancelCurrentGroup()">
+            {{ $t('components.cancel') }}
+          </VcsFormButton>
+        </div>
+      </v-sheet>
+    </v-dialog>
 
-      <v-row no-gutters>
-        <v-col cols="6">
-          <VcsLabel required html-for="groupModuleName">
-            {{ $st('moduleSelector.configEditor.groupName') }}
-          </VcsLabel>
-        </v-col>
-        <v-col>
-          <VcsTextField
-            id="groupModuleName"
-            placeholder="Module Name"
-            v-model="currentGroup!.title"
-            :rules="[(v: string) => !!v || 'moduleSelector.configEditor.error']"
-          />
-        </v-col>
-      </v-row>
-      <v-row no-gutters>
-        <v-col cols="6">
-          <VcsLabel required html-for="groupModuleIcon">
-            {{ $st('moduleSelector.configEditor.moduleIcon') }}
-          </VcsLabel>
-        </v-col>
-        <v-col>
-          <VcsTextField
-            id="groupModuleIcon"
-            placeholder="Module Icon"
-            v-model="currentGroup!.icon"
-            :rules="[
-              (v: string) => !!v || 'moduleSelector.configEditor.editorError',
-            ]"
-          />
-        </v-col>
-      </v-row>
-      <v-row no-gutters>
-        <v-col cols="6">
-          <VcsLabel html-for="groupModuleDescription">
-            {{ $st('moduleSelector.configEditor.groupDescription') }}
-          </VcsLabel>
-        </v-col>
-        <v-col>
-          <VcsTextArea
-            id="groupModuleDescription"
-            placeholder=""
-            v-model="currentGroup!.description"
-          />
-        </v-col>
-      </v-row>
-    </v-container>
     <VcsFormSection
       heading="moduleSelector.configEditor.heading"
       :start-open="true"
       :header-actions="headerActions"
     >
       <VcsList
-        v-if="currentGroup === undefined"
         :items="listItemArray"
         :draggable="true"
-        @item-moved="move"
+        @item-moved="moveItem"
       />
-      <VcsList
-        v-else
-        :items="currentGroup.cards"
-        :draggable="true"
-        @item-moved="move"
-      />
+
       <v-dialog
         v-model="editingItemDialogVisible"
         width="400"
@@ -209,7 +225,6 @@
       </v-dialog>
     </VcsFormSection>
     <VcsFormSection
-      v-if="currentGroup === undefined"
       heading="moduleSelector.configEditor.windowPosition"
       :expandable="true"
     >
@@ -240,13 +255,12 @@
     VcsList,
     VcsListItem,
     VcsTextField,
-    VcsUiApp,
     VcsTextArea,
+    VcsFormButton,
   } from '@vcmap/ui';
   import {
     computed,
     defineComponent,
-    inject,
     PropType,
     reactive,
     Ref,
@@ -255,12 +269,12 @@
     watch,
   } from 'vue';
   import {
-    VBreadcrumbs,
-    VBreadcrumbsItem,
     VCol,
     VContainer,
     VDialog,
     VRow,
+    VSheet,
+    VForm,
   } from 'vuetify/components';
   import ModuleEditor from './ModuleEditor.vue';
   import { Module, ModuleSelectorConfig, ModuleType } from '../index';
@@ -289,19 +303,20 @@
   export default defineComponent({
     name: 'ModuleSelectorConfigEditor',
     components: {
+      VForm,
+      VcsFormButton,
       VcsCheckbox,
       VDialog,
       VcsList,
       VcsFormSection,
       VRow,
+      VSheet,
       VcsLabel,
       AbstractConfigEditor,
       VcsTextField,
       VCol,
       VContainer,
       ModuleEditor,
-      VBreadcrumbs,
-      VBreadcrumbsItem,
       WindowPositionSettings,
       VcsModuleTable: CloudModuleSelector,
       VcsTextArea,
@@ -317,7 +332,6 @@
       },
     },
     setup(props) {
-      const app = inject('vcsApp') as VcsUiApp;
       const level = ref<number>(0);
       const localConfig = ref<ModuleSelectorConfig | undefined>(undefined);
       const listItemArray: Ref<VcsListItemWithLabel[]> = ref([]);
@@ -337,6 +351,15 @@
         moduleUrl: '',
         description: '',
       });
+
+      let selectedGroupItem: Module<ModuleType> = {
+        title: '',
+        icon: '',
+        type: 'group',
+        description: '',
+        cards: [],
+      };
+
       const selectCloudItemDialogVisible: Ref<boolean> = ref(false);
       const editingItemDialogVisible: Ref<boolean> = ref(false);
       const groupItemDialogVisible: Ref<boolean> = ref(false);
@@ -367,6 +390,36 @@
       });
       const headerActions = reactive<VcsAction[]>([]);
 
+      function removeIdAndActions(
+        item: VcsListItemWithLabel,
+      ): Module<ModuleType> {
+        if (item.type === 'url') {
+          const { actions, id, name, ...configItem } = item;
+          return {
+            ...configItem,
+            moduleUrl: item.moduleUrl || '',
+          } as Module<'url'>;
+        } else {
+          const updatedCards =
+            item.cards?.map((card) => {
+              const { actions, id, name, ...configItem } = card;
+              return {
+                ...configItem,
+              } as Module<'url'>;
+            }) || [];
+          const { actions, id, name, ...configItem } = item;
+          return {
+            ...configItem,
+            ...(updatedCards.length ? { cards: updatedCards } : {}),
+          } as Module<'group'>;
+        }
+      }
+
+      function removeIdAndActionsFromArray(
+        items: VcsListItemWithLabel[],
+      ): Module<ModuleType>[] {
+        return items.map(removeIdAndActions);
+      }
       function createListItem(
         moduleInfo: Module<ModuleType>,
         index: number,
@@ -435,6 +488,15 @@
                 );
                 if (item) {
                   currentGroup.value = item;
+                  groupItemDialogVisible.value = true;
+                  const [firstItem] = removeIdAndActionsFromArray([
+                    currentGroup.value,
+                  ]) as Module<'group'>[];
+                  if (firstItem.cards.length === 0) {
+                    firstItem.cards = [];
+                  }
+                  selectedGroupItem = structuredClone(firstItem);
+
                   headerActions.splice(2, 1);
                   if (headerActions.length > 1) {
                     headerActions[1].icon = '$vcsPlus';
@@ -484,31 +546,6 @@
         },
       });
 
-      function removeIdAndActions(
-        item: VcsListItemWithLabel,
-      ): Module<ModuleType> {
-        if (item.type === 'url') {
-          const { actions, id, name, ...configItem } = item;
-          return {
-            ...configItem,
-            moduleUrl: item.moduleUrl || '',
-          } as Module<'url'>;
-        } else {
-          const updatedCards =
-            item.cards?.map((card) => {
-              const { actions, id, name, ...configItem } = card;
-              return {
-                ...configItem,
-              } as Module<'url'>;
-            }) || [];
-          const { actions, id, name, ...configItem } = item;
-          return {
-            ...configItem,
-            ...(updatedCards.length ? { cards: updatedCards } : {}),
-          } as Module<'group'>;
-        }
-      }
-
       const headerGroupAction = {
         name: 'moduleSelector.configEditor.addGroup',
         callback(): void {
@@ -529,6 +566,7 @@
           );
 
           currentGroup.value = listItemArray.value[indexItem - 1];
+          groupItemDialogVisible.value = true;
 
           headerActions.splice(2, 1);
           if (headerActions.length > 1) {
@@ -538,13 +576,6 @@
           }
         },
       };
-
-      function removeIdAndActionsFromArray(
-        items: VcsListItemWithLabel[],
-      ): Module<ModuleType>[] {
-        return items.map(removeIdAndActions);
-      }
-
       if (localConfig.value?.modules) {
         listItemArray.value = localConfig.value.modules.map(createListItem);
       }
@@ -723,6 +754,8 @@
       };
 
       const returnLevel = (): void => {
+        groupItemDialogVisible.value = false;
+
         currentGroup.value = undefined;
         if (headerActions.length > 1) {
           delete headerActions[1].icon;
@@ -731,40 +764,45 @@
         headerActions.push(headerGroupAction);
       };
 
-      const breadcrumbItems = ref([
-        {
-          title: app.vueI18n.t(
-            'moduleSelector.configEditor.breadcrumbs.overview',
-          ),
-          disabled: false,
-          href: '#',
-        },
-        {
-          title: app.vueI18n.t('moduleSelector.configEditor.breadcrumbs.group'),
-          disabled: true,
-          href: '#',
-        },
-      ]);
+      const isRequired = (v: string): boolean | string => {
+        return v && v.trim() !== ''
+          ? true
+          : 'moduleSelector.configEditor.error';
+      };
 
-      const isFormValid = computed(() => {
-        return !!currentGroup.value?.title && !!currentGroup.value?.icon;
-      });
+      const isFormValid = ref();
 
-      watch(currentGroup, (currentG) => {
-        if (currentG && currentG.title) {
-          breadcrumbItems.value[1].title = `${app.vueI18n.t('moduleSelector.configEditor.breadcrumbs.group')}: ${currentG.title}`;
-          currentG.name = currentG.title;
+      const cancelCurrentGroup = (): void => {
+        const groupIndex = listItemArray.value.findIndex(
+          (item) => item.id === currentGroup.value!.id,
+        );
+        if (selectedGroupItem.title !== '') {
+          const newGroupItem = createListItem(selectedGroupItem, groupIndex);
+          listItemArray.value.splice(groupIndex, 1, newGroupItem);
+        } else {
+          listItemArray.value.splice(groupIndex, 1);
         }
-      });
+
+        groupItemDialogVisible.value = false;
+        currentGroup.value = undefined;
+        if (headerActions.length > 1) {
+          delete headerActions[1].icon;
+          delete headerActions[1].title;
+        }
+        headerActions.push(headerGroupAction);
+      };
+
       return {
         isFormValid,
         editingItem,
+        selectedGroupItem,
+        groupItemDialogVisible,
+        cancelCurrentGroup,
         selectCloudItem,
         editingItemDialogVisible,
         selectCloudItemDialogVisible,
         localConfig,
         listItemArray,
-        breadcrumbItems,
         currentGroup,
         apply,
         returnLevel,
@@ -775,37 +813,31 @@
         basisModule,
         basisModuleExists,
         headerActions,
-        move({
+        isRequired,
+        moveItem({
           item,
           targetIndex,
         }: {
           item: VcsListItemWithLabel;
           targetIndex: number;
         }): void {
-          if (listItemArray.value && currentGroup.value === undefined) {
-            let target = targetIndex;
-            target = target >= 0 ? target : 0;
-            target =
-              target < listItemArray.value?.length
-                ? target
-                : listItemArray.value.length - 1;
-            const from = listItemArray.value?.indexOf(item);
-            if (from !== target) {
-              listItemArray.value?.splice(from, 1);
-              listItemArray.value?.splice(target, 0, item);
-            }
-          } else if ((currentGroup.value?.cards?.length ?? 0) > 1) {
-            let target = targetIndex;
-            target = target >= 0 ? target : 0;
-            target =
-              target < currentGroup.value!.cards!.length
-                ? target
-                : currentGroup.value!.cards!.length - 1;
-            const from = currentGroup.value!.cards!.indexOf(item);
-            if (from && from !== target) {
-              currentGroup.value!.cards!.splice(from, 1);
-              currentGroup.value!.cards!.splice(target, 0, item);
-            }
+          const from = listItemArray.value?.indexOf(item);
+          if (from !== targetIndex) {
+            listItemArray.value?.splice(from, 1);
+            listItemArray.value?.splice(targetIndex, 0, item);
+          }
+        },
+        moveCard({
+          item,
+          targetIndex,
+        }: {
+          item: VcsListItemWithLabel;
+          targetIndex: number;
+        }): void {
+          const from = currentGroup.value!.cards!.indexOf(item);
+          if (from !== targetIndex) {
+            currentGroup.value?.cards?.splice(from, 1);
+            currentGroup.value?.cards?.splice(targetIndex, 0, item);
           }
         },
       };
@@ -813,8 +845,4 @@
   });
 </script>
 
-<style scoped>
-  .v-breadcrumbs {
-    padding: 16px 0 4px 0;
-  }
-</style>
+<style scoped></style>

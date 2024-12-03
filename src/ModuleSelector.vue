@@ -7,7 +7,7 @@
           class="pa-2"
           v-if="basisModule && !nestedCards.length"
         >
-          <v-card class="pa-3 fixed-card selected-card" outlined>
+          <v-card class="pa-3 fixed-card selected-card" variant="outlined">
             <v-tooltip :max-width="300">
               <template #activator="{ props }">
                 <v-icon
@@ -37,9 +37,10 @@
           >
             <v-card
               class="fixed-card hover-card"
-              outlined
+              variant="outlined"
               :class="{
                 'selected-card': plugin.selectedMainModuleIndex.value === index,
+                'pr-3': module.type === 'group',
               }"
               @click="selectModule(index)"
             >
@@ -54,10 +55,45 @@
                 </template>
                 <span>{{ $st(module.description) }}</span>
               </v-tooltip>
-              <v-icon v-if="module.icon" size="50">{{ module.icon }}</v-icon>
-              <v-card-title class="text-center">{{
-                $st(module.title)
-              }}</v-card-title>
+              <v-card
+                v-if="module.type === 'group' && module.cards"
+                class="intermediate-card"
+                variant="outlined"
+                :class="{
+                  'selected-card':
+                    plugin.selectedMainModuleIndex.value === index,
+                  'pr-3': module.type === 'group',
+                }"
+              >
+                <v-card
+                  :variant="
+                    module.type === 'group' && module.cards
+                      ? 'outlined'
+                      : undefined
+                  "
+                  :class="{
+                    'selected-card':
+                      plugin.selectedMainModuleIndex.value === index,
+                    groupCard: module.type === 'group',
+                    innerCard: module.type === 'group',
+                  }"
+                >
+                  <v-icon v-if="module.icon" size="50" class="groupIcon">
+                    {{ module.icon }}
+                  </v-icon>
+                  <v-card-title class="text-center groupTitle">
+                    {{ $st(module.title) }}
+                  </v-card-title>
+                </v-card></v-card
+              >
+              <template v-else>
+                <v-icon v-if="module.icon" size="50">
+                  {{ module.icon }}
+                </v-icon>
+                <v-card-title class="text-center">
+                  {{ $st(module.title) }}
+                </v-card-title>
+              </template>
             </v-card>
           </v-col>
         </template>
@@ -66,7 +102,7 @@
           <v-col cols="auto" class="pa-2">
             <v-card
               class="fixed-card hover-card"
-              outlined
+              variant="outlined"
               @click="showMainCards()"
             >
               <v-icon size="50">mdi-arrow-left</v-icon>
@@ -81,7 +117,7 @@
           >
             <v-card
               class="fixed-card hover-card"
-              outlined
+              variant="outlined"
               :class="{
                 'selected-card':
                   plugin.selectedNestedModuleIndex.value === index,
@@ -241,7 +277,7 @@
   });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
   .v-card {
     display: flex;
     flex-direction: column;
@@ -270,5 +306,23 @@
     z-index: 10;
     cursor: pointer;
     color: rgb(var(--v-theme-on-surface));
+  }
+  .groupCard {
+    width: 146px;
+    background-color: rgb(var(--v-theme-surface));
+    border: none !important; /* Removes all borders */
+    border-right: 1px solid !important; /* Adds a border to the right */
+  }
+  .intermediate-card {
+    width: 148px;
+    background-color: rgb(var(--v-theme-surface));
+    border: none !important; /* Removes all borders */
+    border-right: 1px solid !important; /* Adds a border to the right */
+  }
+  .groupTitle {
+    margin-left: 20px !important;
+  }
+  .groupIcon {
+    margin-left: 20px !important;
   }
 </style>

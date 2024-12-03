@@ -80,14 +80,13 @@
                 <VcsTextArea
                   id="moduleDescription"
                   v-model="selectedItem.description"
-                  :rules="[requiredRule]"
                 />
               </v-col>
             </v-row>
           </v-container>
         </v-form>
       </VcsFormSection>
-      <div class="d-flex px-2">
+      <div class="d-flex px-2 justify-end w-100">
         <VcsFormButton
           v-if="isItemIdEmpty"
           variant="filled"
@@ -194,6 +193,7 @@
       {
         title: 'moduleSelector.configEditor.moduleCloudPicker.headers.name',
         value: 'name',
+        sortable: true,
       },
       {
         title: 'moduleSelector.configEditor.moduleCloudPicker.headers.type',
@@ -204,6 +204,7 @@
         title:
           'moduleSelector.configEditor.moduleCloudPicker.headers.description',
         value: 'description',
+        sortable: true,
       },
       {
         title:
@@ -223,11 +224,13 @@
         title:
           'moduleSelector.configEditor.moduleCloudPicker.headers.createdBy',
         value: 'createdBy',
+        sortable: true,
       },
       {
         title:
           'moduleSelector.configEditor.moduleCloudPicker.headers.updatedBy',
         value: 'updatedBy',
+        sortable: true,
       },
     ];
   }
@@ -323,7 +326,7 @@
       };
 
       function getItems(options: UpdateItemsEvent): void {
-        const { itemsPerPage, page, search, sortBy, sortDesc } = options;
+        const { itemsPerPage, page, search, sortBy } = options;
         loading.value = true;
         if (publisherOptions.projectId) {
           getProjectModules({
@@ -331,8 +334,8 @@
             limit: itemsPerPage,
             page: page - 1,
             name: search,
-            orderBy: sortBy,
-            sort: sortDesc?.[0] ? 'desc' : 'asc',
+            orderBy: sortBy?.map(({ key }) => key),
+            sort: sortBy?.[0]?.order as 'asc' | 'desc',
           })
             .then((data) => {
               items.value = data.items.map((i) => {

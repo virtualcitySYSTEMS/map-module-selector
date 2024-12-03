@@ -1,6 +1,8 @@
 # v2.0.4
 
 - Add Tooltip to each card for Modules and Groups
+- Update ConfigEditor workflow
+- Update Group Design
 
 # v2.0.3
 

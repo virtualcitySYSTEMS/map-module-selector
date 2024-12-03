@@ -45,8 +45,8 @@
   ],
   "prettier": "@vcsuite/eslint-config/prettier.js",
   "peerDependencies": {
-    "@vcmap/core": "^6.0.5",
-    "@vcmap/ui": "^6.0.7",
+    "@vcmap/core": "^6.0.6",
+    "@vcmap/ui": "^6.0.10",
     "vue": "~3.4.38",
     "vuetify": "^3.7.3"
   },
