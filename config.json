@@ -2,7 +2,6 @@
   "name": "module-selector",
   "requireModuleSelection": true,
   "windowTitle": "This is a title",
-  "position": { "top": "10%", "width": "500px", "height": "500px" },
   "basisModule": {
     "title": "BASISZWILLING",
     "icon": "mdi-home-city"

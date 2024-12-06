@@ -3,6 +3,7 @@
 - Add Tooltip to each card for Modules and Groups
 - Update ConfigEditor workflow
 - Update Group Design
+- added a new default for maxHeight
 
 # v2.0.3
 
