@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <VcsFormSection>
+    <VcsFormSection heading="moduleSelector.configEditor.moduleSettings">
       <v-form v-model="isFormValid" ref="form">
         <v-container class="px-2 pt-0 pb-2">
           <v-row no-gutters>

@@ -3,6 +3,8 @@
 - Add Tooltip to each card for Modules and Groups
 - Update ConfigEditor workflow
 - Update Group Design
+- Update Editor Design
+- Pin Button to the bottom of the Module Selector
 - added a new default for maxHeight
 
 # v2.0.3

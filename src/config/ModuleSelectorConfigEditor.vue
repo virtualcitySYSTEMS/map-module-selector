@@ -163,7 +163,7 @@
           </v-form>
         </VcsFormSection>
         <VcsFormSection
-          heading="moduleSelector.configEditor.heading"
+          heading="moduleSelector.configEditor.heading2"
           :start-open="true"
           :header-actions="headerActions"
         >
@@ -174,18 +174,19 @@
             @item-moved="moveCard"
           />
         </VcsFormSection>
-        <div class="d-flex px-2 justify-end w-100">
-          <VcsFormButton
-            variant="filled"
-            class="ma-2"
-            :disabled="!isFormValid"
-            @click="returnLevel()"
-          >
-            {{ $t('components.apply') }}
-          </VcsFormButton>
-          <VcsFormButton class="ma-2" @click="cancelCurrentGroup()">
-            {{ $t('components.cancel') }}
-          </VcsFormButton>
+        <div class="d-flex gc-2 px-2 pt-2 pb-2">
+          <div class="d-flex gc-2 justify-end w-100">
+            <VcsFormButton
+              variant="filled"
+              :disabled="!isFormValid"
+              @click="returnLevel()"
+            >
+              {{ $t('components.apply') }}
+            </VcsFormButton>
+            <VcsFormButton @click="cancelCurrentGroup()">
+              {{ $t('components.cancel') }}
+            </VcsFormButton>
+          </div>
         </div>
       </v-sheet>
     </v-dialog>

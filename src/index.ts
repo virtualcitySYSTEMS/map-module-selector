@@ -260,6 +260,7 @@ export default function plugin(
             editorError: 'Bitte füllen Sie das Feld aus',
             breadcrumbs: { overview: 'Übersicht', group: 'Gruppe' },
             heading: 'Themen- & Modulzuordnung',
+            heading2: 'Modulzuordnung',
             groupHeading: 'Gruppeneinstellungen',
             baseModule: 'Basismodul',
             baseModuleCheckbox: 'Basismodul anzeigen',
@@ -278,6 +279,7 @@ export default function plugin(
             requireModuleSelection: 'Modulauswahl erforderlich machen',
             windowTitle: 'Fenster Titel',
             windowPosition: 'Fenster Position',
+            moduleSettings: 'Modul Einstellungen',
           },
         },
       },
@@ -311,6 +313,7 @@ export default function plugin(
             editorError: 'Please fill in the field',
             breadcrumbs: { overview: 'Overview', group: 'Group' },
             heading: 'Topic & module assignment',
+            heading2: 'Module assignment',
             groupHeading: 'Group settings',
             baseModule: 'Base module',
             baseModuleCheckbox: 'Show base module',
@@ -329,10 +332,12 @@ export default function plugin(
             requireModuleSelection: 'Require module selection',
             windowTitle: 'Window title',
             windowPosition: 'Window position',
+            moduleSettings: 'Module settings',
           },
         },
       },
     },
+
     destroy(): void {},
   };
 }

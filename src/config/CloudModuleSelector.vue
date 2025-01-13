@@ -1,43 +1,50 @@
 <template>
   <v-card>
     <div>
-      <VcsDataTable
+      <VcsFormSection
         v-if="isItemIdEmpty"
-        base-component="VDataTableServer"
-        :loading="loading"
-        :items="items"
-        :server-items-length="totalItems"
-        :server-pages-length="totalPages"
-        :searchbar-placeholder="
-          $t('moduleSelector.configEditor.moduleCloudPicker.searchName')
-        "
-        :headers="headers"
-        select-strategy="single"
-        return-object
-        show-select
-        item-value="_id"
-        v-model="selected"
-        @update:items="getItems"
+        heading="moduleSelector.configEditor.moduleSettings"
       >
-        <!-- eslint-disable-next-line -->
-        <template v-slot:item.type="{ item }">
-          <v-icon v-bind="{ ...$attrs }">
-            {{ typeIcon(item.type) }}
-          </v-icon>
-          <v-tooltip activator="parent" location="right">
-            {{ $t(`appConfigurator.dialogs.vcsModuleTable.${item.type}`) }}
-          </v-tooltip>
-        </template>
-        <!-- eslint-disable-next-line -->
-        <template v-slot:item.createdAt="{ item }">
-          {{ formatDate(item.createdAt, $i18n.locale) }}
-        </template>
-        <!-- eslint-disable-next-line -->
-        <template v-slot:item.updatedAt="{ item }">
-          {{ formatDate(item.updatedAt, $i18n.locale) }}
-        </template>
-      </VcsDataTable>
-      <VcsFormSection v-else>
+        <VcsDataTable
+          base-component="VDataTableServer"
+          :loading="loading"
+          :items="items"
+          :server-items-length="totalItems"
+          :server-pages-length="totalPages"
+          :searchbar-placeholder="
+            $t('moduleSelector.configEditor.moduleCloudPicker.searchName')
+          "
+          :headers="headers"
+          select-strategy="single"
+          return-object
+          show-select
+          item-value="_id"
+          v-model="selected"
+          @update:items="getItems"
+        >
+          <!-- eslint-disable-next-line -->
+          <template v-slot:item.type="{ item }">
+            <v-icon v-bind="{ ...$attrs }">
+              {{ typeIcon(item.type) }}
+            </v-icon>
+            <v-tooltip activator="parent" location="right">
+              {{ $t(`appConfigurator.dialogs.vcsModuleTable.${item.type}`) }}
+            </v-tooltip>
+          </template>
+          <!-- eslint-disable-next-line -->
+          <template v-slot:item.createdAt="{ item }">
+            {{ formatDate(item.createdAt, $i18n.locale) }}
+          </template>
+          <!-- eslint-disable-next-line -->
+          <template v-slot:item.updatedAt="{ item }">
+            {{ formatDate(item.updatedAt, $i18n.locale) }}
+          </template>
+        </VcsDataTable>
+      </VcsFormSection>
+      <VcsFormSection
+        v-else
+        heading="moduleSelector.configEditor.moduleSettings"
+      >
         <v-form v-model="isFValid" ref="form">
           <v-container class="px-2 pt-0 pb-2">
             <v-row no-gutters class="px-2">
@@ -86,41 +93,45 @@
           </v-container>
         </v-form>
       </VcsFormSection>
-      <div class="d-flex px-2 justify-end w-100">
-        <VcsFormButton
-          v-if="isItemIdEmpty"
-          variant="filled"
-          :disabled="selected[0] === undefined"
-          class="ma-2"
-          @click="addSelected"
-          tooltip="appConfigurator.dialogs.addTooltip"
-          tooltip-position="bottom"
-        >
-          {{ $t('moduleSelector.configEditor.moduleCloudPicker.continue') }}
-        </VcsFormButton>
-        <VcsFormButton
+      <div class="d-flex gc-2 px-2 pt-2 pb-2">
+        <div v-if="isItemIdEmpty" class="d-flex gc-2 justify-end w-100">
+          <VcsFormButton
+            variant="filled"
+            :disabled="selected[0] === undefined"
+            @click="addSelected"
+            tooltip="appConfigurator.dialogs.addTooltip"
+            tooltip-position="bottom"
+          >
+            {{ $t('moduleSelector.configEditor.moduleCloudPicker.continue') }}
+          </VcsFormButton>
+          <VcsFormButton @click="close">
+            {{ $t('components.cancel') }}
+          </VcsFormButton>
+        </div>
+        <div
           v-if="!isItemIdEmpty"
-          :disabled="!isFValid"
-          variant="filled"
-          class="ma-2"
-          @click="
-            () => {
-              $emit('submit', selectedItem);
-            }
-          "
+          class="d-flex gc-2 justify-space-between w-100"
         >
-          {{ $t('components.apply') }}
-        </VcsFormButton>
-        <VcsFormButton
-          v-if="!isItemIdEmpty"
-          @click="removeSelected"
-          class="ma-2"
-        >
-          {{ $t('moduleSelector.configEditor.moduleCloudPicker.back') }}
-        </VcsFormButton>
-        <VcsFormButton class="ma-2" @click="close">
-          {{ $t('components.cancel') }}
-        </VcsFormButton>
+          <VcsFormButton @click="removeSelected">
+            {{ $t('moduleSelector.configEditor.moduleCloudPicker.back') }}
+          </VcsFormButton>
+          <div class="d-flex gc-2">
+            <VcsFormButton
+              :disabled="!isFValid"
+              variant="filled"
+              @click="
+                () => {
+                  $emit('submit', selectedItem);
+                }
+              "
+            >
+              {{ $t('components.apply') }}
+            </VcsFormButton>
+            <VcsFormButton @click="close">
+              {{ $t('components.cancel') }}
+            </VcsFormButton>
+          </div>
+        </div>
       </div>
     </div>
   </v-card>

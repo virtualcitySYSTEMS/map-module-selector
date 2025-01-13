@@ -144,7 +144,7 @@
           </v-col>
         </template>
       </v-row>
-      <v-row justify="end">
+      <v-row class="fixed-bottom" justify="end">
         <VcsFormButton
           variant="filled"
           class="ma-5"
@@ -324,5 +324,11 @@
   }
   .groupIcon {
     margin-left: 20px !important;
+  }
+  .fixed-bottom {
+    position: sticky;
+    bottom: 0;
+    background-color: rgb(var(--v-theme-surface));
+    z-index: 10;
   }
 </style>
