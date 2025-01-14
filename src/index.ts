@@ -94,7 +94,9 @@ export default function plugin(
         state: {
           headerIcon: 'mdi-view-grid',
           headerTitle: this.config.windowTitle,
-          infoUrlCallback: app.getHelpUrlCallback('/tools/moduleSelector.html'),
+          infoUrlCallback: app.getHelpUrlCallback(
+            '/components/genericFunctions.html#id_moduleSelector',
+          ),
         },
         props: {
           modules: this.config.modules,
