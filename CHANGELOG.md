@@ -1,3 +1,7 @@
+# v2.0.7
+
+- Fix a styling issue
+
 # v2.0.4
 
 - Add Tooltip to each card for Modules and Groups

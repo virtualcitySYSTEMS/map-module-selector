@@ -12,7 +12,7 @@
               <template #activator="{ props }">
                 <v-icon
                   v-if="basisModule.description"
-                  class="top-right-icon"
+                  class="top-left-icon"
                   v-bind="props"
                   >{{ '$vcsInfo' }}
                 </v-icon>
@@ -48,7 +48,10 @@
                 <template #activator="{ props }">
                   <v-icon
                     v-if="module.description"
-                    class="top-right-icon"
+                    class="top-left-icon"
+                    :class="{
+                      selected: plugin.selectedMainModuleIndex.value === index,
+                    }"
                     v-bind="props"
                     >{{ '$vcsInfo' }}
                   </v-icon>
@@ -128,7 +131,7 @@
                 <template #activator="{ props }">
                   <v-icon
                     v-if="card.description"
-                    class="top-right-icon"
+                    class="top-left-icon"
                     v-bind="props"
                     >{{ '$vcsInfo' }}
                   </v-icon>
@@ -299,7 +302,7 @@
     color: rgb(var(--v-theme-on-primary));
   }
 
-  .top-right-icon {
+  .top-left-icon {
     position: absolute;
     top: 8px;
     left: 8px;
@@ -307,6 +310,10 @@
     cursor: pointer;
     color: rgb(var(--v-theme-on-surface));
   }
+  .top-left-icon.selected {
+    color: rgb(var(--v-theme-on-primary));
+  }
+
   .groupCard {
     width: 146px;
     background-color: rgb(var(--v-theme-surface));
