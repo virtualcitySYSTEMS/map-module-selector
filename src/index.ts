@@ -136,7 +136,7 @@ export default function plugin(
 
       const { action } = createToggleAction(
         {
-          name: 'moduleSelector',
+          name: 'moduleSelector.title',
           title: 'moduleSelector.title',
           icon: 'mdi-view-grid',
         },
