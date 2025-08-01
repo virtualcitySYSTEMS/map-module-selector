@@ -152,6 +152,7 @@ export default function plugin(
         },
         name,
         ButtonLocation.PROJECT,
+        { desktop: true, tablet: true, mobile: true },
       );
 
       if ((state && state.w) || (!state && this.config.isActiveOnStart)) {

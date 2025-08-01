@@ -1,6 +1,8 @@
-# v2.0.7
+# v3.0.0
 
 - Fix a styling issue
+- Update ui and core to 6.1
+- Make module selector in mobile view available
 
 # v2.0.4
 
