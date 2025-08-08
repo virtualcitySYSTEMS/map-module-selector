@@ -1,4 +1,4 @@
-import { ModuleSelectorConfig } from './index.js';
+import type { ModuleSelectorConfig } from './index.js';
 
 export default (): ModuleSelectorConfig => ({
   windowTitle: 'moduleSelector.title',

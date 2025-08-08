@@ -3,9 +3,9 @@
     <v-container>
       <v-row class="justify-center align-center" no-gutters>
         <v-col
+          v-if="basisModule && !nestedCards.length"
           cols="auto"
           class="pa-2"
-          v-if="basisModule && !nestedCards.length"
         >
           <v-card class="pa-3 fixed-card selected-card" variant="outlined">
             <v-tooltip :max-width="300">
@@ -30,10 +30,10 @@
         </v-col>
         <template v-if="!nestedCards.length">
           <v-col
+            v-for="(module, index) in modules"
+            :key="index"
             cols="auto"
             class="pa-2"
-            :key="index"
-            v-for="(module, index) in modules"
           >
             <v-card
               class="fixed-card hover-card"
@@ -151,6 +151,7 @@
         <VcsFormButton
           variant="filled"
           class="ma-5"
+          :disabled="isButtonDisabled"
           @click="
             startApplication(
               plugin.selectedMainModuleIndex.value,
@@ -160,7 +161,6 @@
               basisModule,
             )
           "
-          :disabled="isButtonDisabled"
         >
           {{ $st('moduleSelector.startButton') }}
         </VcsFormButton>
@@ -180,16 +180,21 @@
     VCardTitle,
     VTooltip,
   } from 'vuetify/components';
-  import { VcsFormButton, VcsUiApp } from '@vcmap/ui';
-  import { computed, defineComponent, inject, PropType } from 'vue';
+  import type { VcsUiApp } from '@vcmap/ui';
+  import { VcsFormButton } from '@vcmap/ui';
+  import type { PropType } from 'vue';
+  import { computed, defineComponent, inject } from 'vue';
   import { name } from '../package.json';
-  import { BasisModule, ModuleSelectorPlugin, ModuleType } from './index.js';
-  import type { Module } from './index.ts';
+  import type {
+    BasisModule,
+    ModuleSelectorPlugin,
+    ModuleType,
+    Module,
+  } from './index.js';
   import { startApplication } from './moduleHelper';
 
   export default defineComponent({
     name: 'ModuleSelector',
-    methods: { startApplication },
     components: {
       VSheet,
       VContainer,
@@ -277,6 +282,7 @@
         app,
       };
     },
+    methods: { startApplication },
   });
 </script>
 

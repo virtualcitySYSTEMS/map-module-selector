@@ -1,13 +1,12 @@
-import {
-  ButtonLocation,
-  createToggleAction,
+import type {
   PluginConfigEditor,
   VcsPlugin,
   VcsUiApp,
   WindowPositionOptions,
-  WindowSlot,
 } from '@vcmap/ui';
-import { Ref, ref } from 'vue';
+import { ButtonLocation, createToggleAction, WindowSlot } from '@vcmap/ui';
+import type { Ref } from 'vue';
+import { ref } from 'vue';
 import { parseBoolean, parseInteger } from '@vcsuite/parsers';
 import equal from 'fast-deep-equal';
 import { mapVersion, name, version } from '../package.json';
@@ -16,11 +15,7 @@ import getDefaultOptions from './defaultOptions.js';
 import ModuleSelectorConfigEditor from './config/ModuleSelectorConfigEditor.vue';
 import { startApplication, windowIdModuleSelector } from './moduleHelper';
 
-export type BasisModule = {
-  title: string;
-  icon: string;
-  description?: string;
-};
+export type BasisModule = { title: string; icon: string; description?: string };
 
 export type ModuleType = 'group' | 'url';
 
@@ -77,7 +72,7 @@ export default function plugin(
       return mapVersion;
     },
     get config(): ModuleSelectorConfig {
-      return { ...getDefaultOptions(), ...configInput } as ModuleSelectorConfig;
+      return { ...getDefaultOptions(), ...configInput };
     },
     selectedMainModuleIndex: ref(undefined),
     selectedNestedModuleIndex: ref(undefined),
@@ -146,10 +141,7 @@ export default function plugin(
       );
 
       app.navbarManager.add(
-        {
-          id: action.name,
-          action,
-        },
+        { id: action.name, action },
         name,
         ButtonLocation.PROJECT,
         { desktop: true, tablet: true, mobile: true },

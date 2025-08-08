@@ -12,9 +12,9 @@
             <v-col cols="6">
               <VcsSelect
                 id="layerName"
+                v-model="localModuleOptions.moduleName"
                 :items="moduleLocal"
                 placeholder="layer"
-                v-model="localModuleOptions.moduleName"
               />
             </v-col>
           </v-row>
@@ -28,13 +28,13 @@
         <VcsFormButton
           class="justify-end relativePosition"
           :disabled="!isFormValid"
+          variant="filled"
           @click="
             () => {
               $emit('update:modelValue', localModuleOptions);
               $emit('close');
             }
           "
-          variant="filled"
         >
           {{ $st('components.apply') }}
         </VcsFormButton>
@@ -58,7 +58,8 @@
     VCol,
     VRow,
   } from 'vuetify/components';
-  import { defineComponent, PropType, ref } from 'vue';
+  import type { PropType } from 'vue';
+  import { defineComponent, ref } from 'vue';
 
   interface ModuleOptions {
     moduleName: string | undefined;
@@ -80,22 +81,16 @@
       VcsFormSection,
     },
     props: {
-      modelValue: {
-        type: Object as PropType<ModuleOptions>,
-        required: true,
-      },
+      modelValue: { type: Object as PropType<ModuleOptions>, required: true },
     },
+    emits: ['update:modelValue', 'close'],
     setup(props) {
       const localModuleOptions = ref(structuredClone(props.modelValue));
       const isFormValid = ref(false);
 
       const moduleLocal = ref();
 
-      return {
-        localModuleOptions,
-        moduleLocal,
-        isFormValid,
-      };
+      return { localModuleOptions, moduleLocal, isFormValid };
     },
   });
 </script>

@@ -1,6 +1,5 @@
-// eslint-disable-next-line import/prefer-default-export
 import { VcsModule } from '@vcmap/core';
-import { VcsUiApp } from '@vcmap/ui';
+import type { VcsUiApp } from '@vcmap/ui';
 import type { BasisModule, Module, ModuleType } from './index';
 
 export async function loadModule(

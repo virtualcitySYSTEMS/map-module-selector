@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <VcsFormSection heading="moduleSelector.configEditor.moduleSettings">
-      <v-form v-model="isFormValid" ref="form">
+      <v-form ref="form" v-model="isFormValid">
         <v-container class="px-2 pt-0 pb-2">
           <v-row no-gutters>
             <v-col cols="6">
@@ -12,8 +12,8 @@
             <v-col cols="6">
               <VcsTextField
                 id="moduleName"
-                placeholder="Module Name"
                 v-model="localModuleOptions.title"
+                placeholder="Module Name"
                 :rules="[requiredRule]"
               />
             </v-col>
@@ -27,8 +27,8 @@
             <v-col cols="6">
               <VcsTextField
                 id="moduleIcon"
-                placeholder="Icon Name"
                 v-model="localModuleOptions.icon"
+                placeholder="Icon Name"
                 :rules="[requiredRule]"
               />
             </v-col>
@@ -42,8 +42,8 @@
             <v-col cols="6">
               <VcsTextField
                 id="moduleUrl"
-                placeholder="URL"
                 v-model="localModuleOptions.moduleUrl"
+                placeholder="URL"
                 :rules="[requiredRule]"
               />
             </v-col>
@@ -67,12 +67,12 @@
       <div class="d-flex gc-2 w-100 justify-end pa-2">
         <VcsFormButton
           :disabled="!isFormValid"
+          variant="filled"
           @click="
             () => {
               $emit('submit', localModuleOptions);
             }
           "
-          variant="filled"
         >
           {{ $st('components.apply') }}
         </VcsFormButton>
@@ -99,7 +99,8 @@
     VCol,
     VRow,
   } from 'vuetify/components';
-  import { defineComponent, PropType, ref } from 'vue';
+  import type { PropType } from 'vue';
+  import { defineComponent, ref } from 'vue';
 
   export default defineComponent({
     name: 'ModuleEditor',
@@ -128,6 +129,7 @@
         required: true,
       },
     },
+    emits: ['submit', 'close'],
     setup(props) {
       const localModuleOptions = ref(props.modelValue); // structuredClone
       const isFormValid = ref(false);
@@ -139,12 +141,7 @@
       const requiredRule = (value: string): string | boolean =>
         !!value || 'moduleSelector.configEditor.editorError';
 
-      return {
-        localModuleOptions,
-        isFormValid,
-        validateForm,
-        requiredRule,
-      };
+      return { localModuleOptions, isFormValid, validateForm, requiredRule };
     },
   });
 </script>

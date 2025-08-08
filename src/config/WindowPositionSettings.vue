@@ -1,53 +1,42 @@
 <template>
   <v-container class="py-0 px-1">
     <v-row
-      no-gutters
       v-for="{ key, checkbox, input, placeholder } in inputs"
       :key="key"
+      no-gutters
     >
       <v-col>
         <VcsCheckbox
-          :label="`appConfigurator.editors.featureInfo.window.position.${key}`"
           v-model="checkbox.value"
+          :label="`appConfigurator.editors.featureInfo.window.position.${key}`"
         />
       </v-col>
       <v-col>
         <VcsTextField
+          v-model.trim="input.value"
           clearable
           :disabled="!checkbox.value"
           :placeholder="placeholder"
-          v-model.trim="input.value"
         />
       </v-col>
     </v-row>
   </v-container>
 </template>
 <script lang="ts">
-  import {
-    computed,
-    defineComponent,
-    PropType,
-    Ref,
-    WritableComputedRef,
-  } from 'vue';
+  import type { PropType, Ref, WritableComputedRef } from 'vue';
+  import { computed, defineComponent } from 'vue';
   import { VContainer, VRow, VCol } from 'vuetify/components';
+  import type { WindowPositionOptions } from '@vcmap/ui';
   import {
     useModelHasProperty,
     useProxiedComplexModel,
     VcsCheckbox,
     VcsTextField,
-    WindowPositionOptions,
   } from '@vcmap/ui';
 
   export default defineComponent({
     name: 'WindowPositionSettings',
-    components: {
-      VContainer,
-      VRow,
-      VCol,
-      VcsCheckbox,
-      VcsTextField,
-    },
+    components: { VContainer, VRow, VCol, VcsCheckbox, VcsTextField },
     props: {
       modelValue: {
         type: Object as PropType<WindowPositionOptions>,
@@ -83,6 +72,7 @@
             };
             return acc;
           },
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           {} as Record<
             keyof WindowPositionOptions,
             {
@@ -95,9 +85,7 @@
         );
       });
 
-      return {
-        inputs,
-      };
+      return { inputs };
     },
   });
 </script>

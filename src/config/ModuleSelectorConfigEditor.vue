@@ -1,8 +1,8 @@
 <template>
   <AbstractConfigEditor
-    @submit="apply"
     v-if="localConfig"
     v-bind="{ ...$attrs, ...$props }"
+    @submit="apply"
   >
     <v-container class="py-0 px-0">
       <VcsFormSection heading="moduleSelector.configEditor.general">
@@ -16,8 +16,8 @@
             <v-col>
               <VcsTextField
                 id="moduleselector-window-title"
-                :placeholder="$st('moduleSelector.title')"
                 v-model="localConfig.windowTitle"
+                :placeholder="$st('moduleSelector.title')"
               />
             </v-col>
           </v-row>
@@ -60,6 +60,7 @@
             <v-col>
               <VcsTextField
                 id="basisModuleName"
+                v-model="basisModule.title"
                 placeholder="Base Module"
                 :rules="[
                   basisModuleExists &&
@@ -67,7 +68,6 @@
                     ? () => 'moduleSelector.configEditor.error'
                     : () => true,
                 ]"
-                v-model="basisModule.title"
               />
             </v-col>
           </v-row>
@@ -80,6 +80,7 @@
             <v-col>
               <VcsTextField
                 id="basisModuleIcon"
+                v-model="basisModule.icon"
                 placeholder="mdi-home-city"
                 :rules="[
                   basisModuleExists &&
@@ -87,7 +88,6 @@
                     ? () => 'moduleSelector.configEditor.error'
                     : () => true,
                 ]"
-                v-model="basisModule.icon"
               />
             </v-col>
           </v-row>
@@ -124,8 +124,8 @@
                 <v-col>
                   <VcsTextField
                     id="groupModuleName"
-                    placeholder="Module Name"
                     v-model="currentGroup.title"
+                    placeholder="Module Name"
                     :rules="[isRequired]"
                   />
                 </v-col>
@@ -139,8 +139,8 @@
                 <v-col>
                   <VcsTextField
                     id="groupModuleIcon"
-                    placeholder="Module Icon"
                     v-model="currentGroup.icon"
+                    placeholder="Module Icon"
                     :rules="[isRequired]"
                   />
                 </v-col>
@@ -154,8 +154,8 @@
                 <v-col>
                   <VcsTextArea
                     id="groupModuleDescription"
-                    placeholder=""
                     v-model="currentGroup.description"
+                    placeholder=""
                   />
                 </v-col>
               </v-row>
@@ -247,28 +247,19 @@
 </template>
 
 <script lang="ts">
+  import type { VcsAction, VcsListItem } from '@vcmap/ui';
   import {
     AbstractConfigEditor,
-    VcsAction,
     VcsCheckbox,
     VcsFormSection,
     VcsLabel,
     VcsList,
-    VcsListItem,
     VcsTextField,
     VcsTextArea,
     VcsFormButton,
   } from '@vcmap/ui';
-  import {
-    computed,
-    defineComponent,
-    PropType,
-    reactive,
-    Ref,
-    ref,
-    toRaw,
-    watch,
-  } from 'vue';
+  import type { PropType, Ref } from 'vue';
+  import { computed, defineComponent, reactive, ref, toRaw, watch } from 'vue';
   import {
     VCol,
     VContainer,
@@ -278,7 +269,7 @@
     VForm,
   } from 'vuetify/components';
   import ModuleEditor from './ModuleEditor.vue';
-  import { Module, ModuleSelectorConfig, ModuleType } from '../index';
+  import type { Module, ModuleSelectorConfig, ModuleType } from '../index';
   import getDefaultOptions from '../defaultOptions.js';
   import WindowPositionSettings from './WindowPositionSettings.vue';
   import CloudModuleSelector from './CloudModuleSelector.vue';
@@ -334,7 +325,10 @@
     },
     setup(props) {
       const level = ref<number>(0);
-      const localConfig = ref<ModuleSelectorConfig | undefined>(undefined);
+      const localConfig = ref<ModuleSelectorConfig>({
+        ...getDefaultOptions(),
+        ...props.getConfig(),
+      });
       const listItemArray: Ref<VcsListItemWithLabel[]> = ref([]);
       const currentGroup: Ref<VcsListItemWithLabel | undefined> =
         ref(undefined);
@@ -366,11 +360,6 @@
       const groupItemDialogVisible: Ref<boolean> = ref(false);
       const listItems: Ref<VcsListItemWithLabel[] | undefined> = ref(undefined);
 
-      localConfig.value = {
-        ...getDefaultOptions(),
-        ...props.getConfig(),
-      } as ModuleSelectorConfig;
-
       const basisModule = ref();
 
       if (localConfig.value?.basisModule) {
@@ -396,6 +385,7 @@
       ): Module<ModuleType> {
         if (item.type === 'url') {
           const { actions, id, name, ...configItem } = item;
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           return {
             ...configItem,
             moduleUrl: item.moduleUrl || '',
@@ -404,11 +394,11 @@
           const updatedCards =
             item.cards?.map((card) => {
               const { actions, id, name, ...configItem } = card;
-              return {
-                ...configItem,
-              } as Module<'url'>;
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              return { ...configItem } as Module<'url'>;
             }) || [];
           const { actions, id, name, ...configItem } = item;
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           return {
             ...configItem,
             ...(updatedCards.length ? { cards: updatedCards } : {}),
@@ -639,17 +629,12 @@
                 (i) => i.id === editingItem.value?.id,
               );
               if (item) {
-                Object.assign(item, {
-                  ...editingItem.value,
-                });
+                Object.assign(item, { ...editingItem.value });
               }
             } else {
               listItemArray.value.push(
                 createListItem(
-                  {
-                    ...editingItem.value,
-                    type: 'url',
-                  },
+                  { ...editingItem.value, type: 'url' },
                   listItemArray.value.length,
                 ),
               );
@@ -660,9 +645,7 @@
             (i) => i.id === editingItem.value.id,
           );
           if (item) {
-            Object.assign(item, {
-              ...editingItem.value,
-            });
+            Object.assign(item, { ...editingItem.value });
           }
 
           let groupId;
@@ -677,10 +660,7 @@
         } else {
           currentGroup.value.cards!.push(
             createListItem(
-              {
-                ...editingItem.value,
-                type: 'url',
-              },
+              { ...editingItem.value, type: 'url' },
               currentGroup.value.cards!.length,
             ),
           );
@@ -725,10 +705,7 @@
         } else {
           currentGroup.value.cards!.push(
             createListItem(
-              {
-                ...selectCloudItem.value,
-                type: 'url',
-              },
+              { ...selectCloudItem.value, type: 'url' },
               currentGroup.value.cards!.length,
             ),
           );

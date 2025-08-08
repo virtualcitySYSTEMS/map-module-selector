@@ -1,9 +1,8 @@
 import { authorize, setServerUrl } from '@vcsuite/publisher-sdk';
 import { getLogger } from '@vcsuite/logger';
 import { name } from '../../package.json';
-import { ModuleSelectorConfig } from '../index';
+import type { ModuleSelectorConfig } from '../index';
 
-// eslint-disable-next-line import/prefer-default-export
 export function setupPublisherSDK(options: ModuleSelectorConfig): void {
   try {
     if (options.serverUrl) {

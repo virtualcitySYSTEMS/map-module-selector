@@ -6,6 +6,7 @@
         heading="moduleSelector.configEditor.moduleSettings"
       >
         <VcsDataTable
+          v-model="selected"
           base-component="VDataTableServer"
           :loading="loading"
           :items="items"
@@ -19,7 +20,6 @@
           return-object
           show-select
           item-value="_id"
-          v-model="selected"
           @update:items="getItems"
         >
           <!-- eslint-disable-next-line -->
@@ -45,7 +45,7 @@
         v-else
         heading="moduleSelector.configEditor.moduleSettings"
       >
-        <v-form v-model="isFValid" ref="form">
+        <v-form ref="form" v-model="isFValid">
           <v-container class="px-2 pt-0 pb-2">
             <v-row no-gutters class="px-2">
               <v-col cols="2">
@@ -56,8 +56,8 @@
               <v-col cols="4">
                 <VcsTextField
                   id="moduleName"
-                  placeholder="Module Name"
                   v-model="selectedItem.title"
+                  placeholder="Module Name"
                   :rules="[requiredRule]"
                 />
               </v-col>
@@ -71,8 +71,8 @@
               <v-col cols="4">
                 <VcsTextField
                   id="moduleIcon"
-                  placeholder="Icon Name"
                   v-model="selectedItem.icon"
+                  placeholder="Icon Name"
                   :rules="[requiredRule]"
                 />
               </v-col>
@@ -98,9 +98,9 @@
           <VcsFormButton
             variant="filled"
             :disabled="selected[0] === undefined"
-            @click="addSelected"
             tooltip="appConfigurator.dialogs.addTooltip"
             tooltip-position="bottom"
+            @click="addSelected"
           >
             {{ $t('moduleSelector.configEditor.moduleCloudPicker.continue') }}
           </VcsFormButton>
@@ -138,18 +138,17 @@
 </template>
 
 <script lang="ts">
+  import type { UpdateItemsEvent, VcsUiApp, VcsPlugin } from '@vcmap/ui';
   import {
-    UpdateItemsEvent,
     VcsDataTable,
     VcsFormButton,
-    VcsUiApp,
     VcsLabel,
     VcsTextField,
     VcsFormSection,
-    VcsPlugin,
     VcsTextArea,
   } from '@vcmap/ui';
-  import { computed, defineComponent, inject, PropType, ref } from 'vue';
+  import type { PropType } from 'vue';
+  import { computed, defineComponent, inject, ref } from 'vue';
   import {
     VIcon,
     VTooltip,
@@ -163,7 +162,8 @@
     getProjectModules,
     type GetProjectModulesResponse,
   } from '@vcsuite/publisher-sdk';
-  import { VcsModule, VcsModuleConfig } from '@vcmap/core';
+  import type { VcsModuleConfig } from '@vcmap/core';
+  import { VcsModule } from '@vcmap/core';
   import { getLogger } from '@vcsuite/logger';
   import { name as pluginName } from '../../package.json';
   import { type ModuleSelectorPlugin } from '../index.js';
@@ -276,6 +276,7 @@
         required: true,
       },
     },
+    emits: ['submit', 'close'],
     setup(props, { emit }) {
       const app = inject<VcsUiApp>('vcsApp')!;
       const plugin = app.plugins.getByKey(pluginName)! as ModuleSelectorPlugin;
@@ -331,7 +332,7 @@
           !!selectedItem.value?.title && !!selectedItem.value?.icon;
       };
 
-      const TypeIcons = {
+      const typeIcons = {
         standalone: '$vcsGlobeNature',
         extension: '$vcsShapes',
       };
@@ -350,6 +351,7 @@
           })
             .then((data) => {
               items.value = data.items.map((i) => {
+                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                 const dataTableEntry = {
                   name: i.name,
                   description: i.description,
@@ -375,10 +377,10 @@
               totalItems.value = data.totalCount;
               totalPages.value = data.totalPages;
             })
-            .catch((err) => {
+            .catch((e: unknown) => {
               getLogger('CloudModuleSelector.vue').error(
                 'Failed to load project modules.',
-                err,
+                String(e),
               );
             })
             .finally(() => {
@@ -423,8 +425,8 @@
         totalPages,
         headers,
         selected,
-        typeIcon(type: keyof typeof TypeIcons): string {
-          return TypeIcons[type];
+        typeIcon(type: keyof typeof typeIcons): string {
+          return typeIcons[type];
         },
         formatDate,
         getItems,
